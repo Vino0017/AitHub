@@ -81,6 +81,8 @@ type Revision struct {
 	ReviewFeedback   json.RawMessage  `json:"review_feedback,omitempty"`
 	ReviewResult     json.RawMessage  `json:"review_result,omitempty"`
 	ReviewRetryCount int              `json:"review_retry_count"`
+	BreakingChange   bool             `json:"breaking_change"`
+	MigrationGuide   *string          `json:"migration_guide,omitempty"`
 	SchemaType       string           `json:"schema_type"` // skill-md | mcp-tool
 	Triggers         []string         `json:"triggers"`
 	CompatibleModels []string         `json:"compatible_models"`
