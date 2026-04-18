@@ -19,6 +19,7 @@ import (
 	"github.com/skillhub/api/internal/llm"
 	"github.com/skillhub/api/internal/middleware"
 	"github.com/skillhub/api/internal/review"
+	"github.com/skillhub/api/internal/usage"
 )
 
 func main() {
@@ -140,6 +141,7 @@ func main() {
 		r.Get("/v1/skills/{namespace}/{name}/forks", forks.ListForks)
 		r.Get("/v1/skills/{namespace}/{name}/fork-tree", forks.GetForkTree)
 		r.Get("/v1/skills/{namespace}/{name}/fork-ranking", forks.GetForkRanking)
+		r.Get("/v1/skills/{namespace}/{name}/stats", detail.GetUsageStats)
 		r.Get("/v1/namespaces/{name}", namespaces.Get)
 
 		// Rating (anonymous can rate, but won't count toward ranking)
@@ -177,6 +179,7 @@ func main() {
 
 	// ── Background tasks ──
 	go runPeriodicRatingRefresh(pool)
+	go runPeriodicUsageStatsRefresh(pool)
 
 	// ── Start server ──
 	port := os.Getenv("PORT")
@@ -241,6 +244,24 @@ func runPeriodicRatingRefresh(pool *pgxpool.Pool) {
 		cancel()
 		if err != nil {
 			log.Printf("periodic rating refresh error: %v", err)
+		}
+	}
+}
+
+// runPeriodicUsageStatsRefresh recalculates DAU, MAU, retention, and zombie detection every 10 minutes.
+func runPeriodicUsageStatsRefresh(pool *pgxpool.Pool) {
+	ticker := time.NewTicker(10 * time.Minute)
+	defer ticker.Stop()
+
+	// Import usage package
+	usageTracker := usage.NewTracker(pool)
+
+	for range ticker.C {
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		err := usageTracker.RefreshUsageStats(ctx)
+		cancel()
+		if err != nil {
+			log.Printf("periodic usage stats refresh error: %v", err)
 		}
 	}
 }

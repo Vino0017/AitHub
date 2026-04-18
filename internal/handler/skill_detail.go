@@ -7,22 +7,26 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/skillhub/api/internal/helpers"
 	"github.com/skillhub/api/internal/middleware"
 	"github.com/skillhub/api/internal/models"
+	"github.com/skillhub/api/internal/usage"
 	"github.com/skillhub/api/internal/validation"
 )
 
 type SkillDetailHandler struct {
-	pool      *pgxpool.Pool
-	validator *validation.EnvironmentValidator
+	pool         *pgxpool.Pool
+	validator    *validation.EnvironmentValidator
+	usageTracker *usage.Tracker
 }
 
 func NewSkillDetailHandler(pool *pgxpool.Pool) *SkillDetailHandler {
 	return &SkillDetailHandler{
-		pool:      pool,
-		validator: validation.NewEnvironmentValidator(),
+		pool:         pool,
+		validator:    validation.NewEnvironmentValidator(),
+		usageTracker: usage.NewTracker(pool),
 	}
 }
 
@@ -98,6 +102,10 @@ func (h *SkillDetailHandler) Content(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go h.pool.Exec(context.Background(), `UPDATE skills SET install_count = install_count + 1 WHERE id = $1`, skill["id"])
+
+	// Log usage for statistics
+	tokenID := middleware.GetTokenID(r.Context())
+	go h.usageTracker.LogUsage(context.Background(), skill["id"].(uuid.UUID), tokenID, "install")
 
 	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"namespace": nsName, "name": skillName, "version": version, "content": content,
@@ -298,4 +306,24 @@ func (h *SkillDetailHandler) ValidateEnvironment(w http.ResponseWriter, r *http.
 		"warnings":             result.Warnings,
 		"install_instructions": result.GetInstallInstructions(),
 	})
+}
+
+// GetUsageStats returns usage statistics for a skill.
+// GET /v1/skills/{namespace}/{name}/stats
+func (h *SkillDetailHandler) GetUsageStats(w http.ResponseWriter, r *http.Request) {
+	nsName := chi.URLParam(r, "namespace")
+	skillName := chi.URLParam(r, "name")
+
+	skill, err := h.getSkillWithAccess(w, r, nsName, skillName)
+	if err != nil {
+		return
+	}
+
+	stats, err := h.usageTracker.GetUsageStats(r.Context(), skill["id"].(uuid.UUID))
+	if err != nil {
+		helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to get usage stats", "")
+		return
+	}
+
+	helpers.WriteJSON(w, http.StatusOK, stats)
 }
