@@ -93,8 +93,19 @@ Review this SKILL.md submission for:
 3. Format quality (does it have clear, actionable instructions?)
 4. Content quality (is it a real useful skill, not spam or placeholder?)
 
+If you find issues, provide specific fixes the AI can apply.
+
 Respond in JSON format:
-{"status": "approved|revision_requested|rejected", "issues": [{"type": "privacy|security|format|quality", "detail": "..."}]}
+{
+  "status": "approved|revision_requested|rejected",
+  "issues": [
+    {
+      "type": "privacy|security|format|quality",
+      "detail": "...",
+      "suggested_fix": "Replace line 42: 'sk-proj-abc123' with '<API_KEY>'"
+    }
+  ]
+}
 
 SKILL.md content:
 %s`, content)
