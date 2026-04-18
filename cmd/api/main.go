@@ -134,6 +134,7 @@ func main() {
 		r.Get("/v1/skills/{namespace}/{name}/content", detail.Content)
 		r.Get("/v1/skills/{namespace}/{name}/status", detail.Status)
 		r.Get("/v1/skills/{namespace}/{name}/updates", detail.Updates)
+		r.Post("/v1/skills/{namespace}/{name}/validate", detail.ValidateEnvironment)
 		r.Get("/v1/skills/{namespace}/{name}/revisions", revisions.List)
 		r.Get("/v1/skills/{namespace}/{name}/revisions/{version}", revisions.GetVersion)
 		r.Get("/v1/skills/{namespace}/{name}/forks", forks.ListForks)

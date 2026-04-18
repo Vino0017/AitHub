@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -9,14 +10,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/skillhub/api/internal/helpers"
 	"github.com/skillhub/api/internal/middleware"
+	"github.com/skillhub/api/internal/models"
+	"github.com/skillhub/api/internal/validation"
 )
 
 type SkillDetailHandler struct {
-	pool *pgxpool.Pool
+	pool      *pgxpool.Pool
+	validator *validation.EnvironmentValidator
 }
 
 func NewSkillDetailHandler(pool *pgxpool.Pool) *SkillDetailHandler {
-	return &SkillDetailHandler{pool: pool}
+	return &SkillDetailHandler{
+		pool:      pool,
+		validator: validation.NewEnvironmentValidator(),
+	}
 }
 
 // Get returns skill details. GET /v1/skills/{namespace}/{name}
@@ -242,4 +249,53 @@ func (h *SkillDetailHandler) getSkillWithAccess(w http.ResponseWriter, r *http.R
 		"latest_version": lv, "fork_count": forkCount, "status": status,
 		"created_at": createdAt, "updated_at": updatedAt,
 	}, nil
+}
+
+// ValidateEnvironment checks if the AI agent's environment meets skill requirements.
+// POST /v1/skills/{namespace}/{name}/validate
+func (h *SkillDetailHandler) ValidateEnvironment(w http.ResponseWriter, r *http.Request) {
+	nsName := chi.URLParam(r, "namespace")
+	skillName := chi.URLParam(r, "name")
+
+	// Parse environment info from request
+	var env validation.EnvironmentInfo
+	if err := helpers.ReadJSON(r, &env); err != nil {
+		helpers.WriteError(w, http.StatusBadRequest, "invalid_body", "Invalid environment info", "")
+		return
+	}
+
+	skill, err := h.getSkillWithAccess(w, r, nsName, skillName)
+	if err != nil {
+		return
+	}
+
+	// Get latest approved revision's requirements
+	var requirementsJSON []byte
+	err2 := h.pool.QueryRow(r.Context(),
+		`SELECT requirements FROM revisions WHERE skill_id = $1 AND review_status = 'approved'
+		 ORDER BY created_at DESC LIMIT 1`, skill["id"]).Scan(&requirementsJSON)
+	if err2 != nil {
+		helpers.WriteError(w, http.StatusNotFound, "no_approved_revision", "No approved revision found", "")
+		return
+	}
+
+	var requirements models.Requirements
+	if len(requirementsJSON) > 0 {
+		if err := json.Unmarshal(requirementsJSON, &requirements); err != nil {
+			helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to parse requirements", "")
+			return
+		}
+	}
+
+	// Validate environment
+	result := h.validator.ValidateRequirements(r.Context(), &requirements, env)
+
+	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"compatible":           result.Compatible,
+		"missing_tools":        result.MissingTools,
+		"missing_software":     result.MissingSoftware,
+		"missing_apis":         result.MissingAPIs,
+		"warnings":             result.Warnings,
+		"install_instructions": result.GetInstallInstructions(),
+	})
 }
