@@ -187,6 +187,7 @@ func main() {
 }
 
 // runPeriodicRatingRefresh recalculates all skill ratings every 5 minutes.
+// Implements cold-start boost: first 10 ratings get 1.5x weight for new skills
 func runPeriodicRatingRefresh(pool *pgxpool.Pool) {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
@@ -202,7 +203,11 @@ func runPeriodicRatingRefresh(pool *pgxpool.Pool) {
 			    SELECT sk.id AS skill_id,
 			           COALESCE(stats.n, 0) AS n,
 			           CASE WHEN COALESCE(stats.n, 0) = 0 THEN 0
-			                ELSE (5.0 * 6.0 + COALESCE(stats.total_score, 0)) / (5.0 + COALESCE(stats.n, 0))
+			                -- Cold-start boost: first 10 ratings get 1.5x weight
+			                WHEN COALESCE(stats.n, 0) <= 10 THEN
+			                    (5.0 * 6.0 + COALESCE(stats.weighted_total, 0)) / (5.0 + COALESCE(stats.weighted_n, 0))
+			                ELSE
+			                    (5.0 * 6.0 + COALESCE(stats.total_score, 0)) / (5.0 + COALESCE(stats.n, 0))
 			           END AS bayesian_avg,
 			           COALESCE(stats.success_rate, 0) AS success_rate
 			    FROM skills sk
@@ -214,6 +219,14 @@ func runPeriodicRatingRefresh(pool *pgxpool.Pool) {
 			    LEFT JOIN LATERAL (
 			        SELECT COUNT(*)::int AS n,
 			               SUM(r.score)::float AS total_score,
+			               -- Weighted sum: first 10 ratings * 1.5
+			               SUM(CASE WHEN ROW_NUMBER() OVER (ORDER BY r.created_at) <= 10
+			                        THEN r.score * 1.5
+			                        ELSE r.score END)::float AS weighted_total,
+			               -- Weighted count: first 10 ratings count as 1.5
+			               SUM(CASE WHEN ROW_NUMBER() OVER (ORDER BY r.created_at) <= 10
+			                        THEN 1.5
+			                        ELSE 1.0 END)::float AS weighted_n,
 			               SUM(CASE WHEN r.outcome = 'success' THEN 1 ELSE 0 END)::float / NULLIF(COUNT(*), 0) AS success_rate
 			        FROM ratings r JOIN tokens t ON r.token_id = t.id
 			        WHERE r.revision_id = latest_rev.rev_id AND t.namespace_id IS NOT NULL
