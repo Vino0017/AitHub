@@ -92,9 +92,12 @@ func (h *AdminHandler) Reject(w http.ResponseWriter, r *http.Request) {
 	}
 	helpers.ReadJSON(r, &req)
 
+	reviewResult := map[string]string{"reason": req.Reason}
+	reviewResultJSON, _ := json.Marshal(reviewResult)
+
 	h.pool.Exec(r.Context(),
 		`UPDATE revisions SET review_status = 'rejected', review_result = $2 WHERE id = $1`,
-		revID, `{"reason":"`+req.Reason+`"}`)
+		revID, reviewResultJSON)
 
 	helpers.WriteJSON(w, http.StatusOK, map[string]string{"status": "rejected"})
 }

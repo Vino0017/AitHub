@@ -34,12 +34,12 @@ AUTO_MIGRATE=true
 SEED_DATA=false
 
 # Admin
-ADMIN_TOKEN=change-me-in-production
+ADMIN_TOKEN=\${ADMIN_TOKEN:-change-me-in-production}
 
 # AI Review
 AI_REVIEW_ENABLED=true
 LLM_PROVIDER=openrouter
-LLM_API_KEY=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
+LLM_API_KEY=\${LLM_API_KEY}
 LLM_MODEL=google/gemma-4-31b-it
 LLM_BASE_URL=https://openrouter.ai/api/v1
 
