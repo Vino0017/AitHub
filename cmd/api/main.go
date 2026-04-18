@@ -175,6 +175,8 @@ func main() {
 		r.Post("/admin/skills/{id}/remove", admin.RemoveSkill)
 		r.Post("/admin/namespaces/{id}/ban", admin.BanNamespace)
 		r.Post("/admin/ratings/refresh", admin.RefreshRatings)
+		r.Get("/admin/privacy/scan", admin.ScanPrivacy)
+		r.Post("/admin/privacy/clean/{revisionId}", admin.ForceCleanRevision)
 	})
 
 	// ── Background tasks ──

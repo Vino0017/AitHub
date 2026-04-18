@@ -10,14 +10,19 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/skillhub/api/internal/helpers"
+	"github.com/skillhub/api/internal/privacy"
 )
 
 type AdminHandler struct {
-	pool *pgxpool.Pool
+	pool           *pgxpool.Pool
+	privacyCleaner *privacy.Cleaner
 }
 
 func NewAdminHandler(pool *pgxpool.Pool) *AdminHandler {
-	return &AdminHandler{pool: pool}
+	return &AdminHandler{
+		pool:           pool,
+		privacyCleaner: privacy.NewCleaner(pool),
+	}
 }
 
 // ListPending lists skills pending review. GET /admin/skills/pending
@@ -152,3 +157,44 @@ func (h *AdminHandler) refreshAllRatings() {
 		log.Printf("rating refresh error: %v", err)
 	}
 }
+
+// ScanPrivacy scans all revisions for privacy issues.
+// GET /admin/privacy/scan
+func (h *AdminHandler) ScanPrivacy(w http.ResponseWriter, r *http.Request) {
+	results, err := h.privacyCleaner.ScanAllRevisions(r.Context())
+	if err != nil {
+		helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to scan revisions", "")
+		return
+	}
+
+	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"total_scanned":    100, // Limited to 100 in query
+		"issues_found":     len(results),
+		"affected_skills":  results,
+	})
+}
+
+// ForceCleanRevision forcibly cleans a revision's content.
+// POST /admin/privacy/clean/{revisionId}
+func (h *AdminHandler) ForceCleanRevision(w http.ResponseWriter, r *http.Request) {
+	revisionIDStr := chi.URLParam(r, "revisionId")
+	revisionID, err := uuid.Parse(revisionIDStr)
+	if err != nil {
+		helpers.WriteError(w, http.StatusBadRequest, "invalid_id", "Invalid revision ID", "")
+		return
+	}
+
+	report, err := h.privacyCleaner.ForceCleanRevision(r.Context(), revisionID)
+	if err != nil {
+		helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to clean revision", "")
+		return
+	}
+
+	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"revision_id":    revisionID,
+		"items_cleaned":  report.ItemsCleaned,
+		"report":         report,
+		"status":         "cleaned",
+	})
+}
+
