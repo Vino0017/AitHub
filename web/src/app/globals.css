@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #050510;
+  --color-foreground: #ededed;
+  
+  --color-primary: #7c3aed;
+  --color-primary-glow: rgba(124, 58, 237, 0.4);
+  
+  --color-accent: #ec4899;
+  --color-accent-glow: rgba(236, 72, 153, 0.4);
+  
+  --color-card: rgba(15, 15, 25, 0.7);
+  --color-card-border: rgba(255, 255, 255, 0.08);
+
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 4s ease-in-out infinite;
+  --animate-shimmer: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(124, 58, 237, 0.2); }
+  50% { border-color: rgba(236, 72, 153, 0.3); }
+}
+
+:root {
+  --background: #050510;
+  --foreground: #ededed;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Hero Gradient Text ─── */
+.text-gradient {
+  background: linear-gradient(135deg, #c084fc, #818cf8, #ec4899, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 300% 300%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+.text-gradient-subtle {
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glass Card ─── */
+.glass-card {
+  background: linear-gradient(135deg, rgba(15, 15, 30, 0.8), rgba(10, 10, 20, 0.6));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(124, 58, 237, 0.25);
+  box-shadow: 
+    0 8px 40px rgba(124, 58, 237, 0.1),
+    0 4px 30px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Top shine line */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.3), rgba(236, 72, 153, 0.2), transparent);
+}
+
+/* ─── Background Grid ─── */
+.bg-grid-pattern {
+  background-size: 60px 60px;
+  background-image: 
+    linear-gradient(to right, rgba(124, 58, 237, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(124, 58, 237, 0.04) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
+}
+
+/* ─── Animated Border Shimmer ─── */
+.shimmer-border {
+  position: relative;
+}
+.shimmer-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), rgba(236, 72, 153, 0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.shimmer-border:hover::after {
+  opacity: 1;
+}
+
+/* ─── Pill Badge ─── */
+.pill-badge {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(236, 72, 153, 0.1));
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+/* ─── CTA Buttons ─── */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.4), 0 0 60px rgba(124, 58, 237, 0.15);
+  transition: all 0.3s;
+}
+.btn-primary:hover {
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.6), 0 0 80px rgba(124, 58, 237, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.3s;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(124, 58, 237, 0.4);
+}
+
+/* ─── Terminal Window ─── */
+.terminal-window {
+  background: linear-gradient(180deg, #0c0c1a, #080812);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  box-shadow: 
+    0 20px 80px rgba(0, 0, 0, 0.8),
+    0 0 40px rgba(124, 58, 237, 0.08);
+}
+
+/* ─── Feature Number Badge ─── */
+.step-number {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(236, 72, 153, 0.15));
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.15);
+}
+
+/* ─── Stat Counter ─── */
+.stat-glow {
+  text-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+}
+
+/* ─── Scrollbar ─── */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Skill Card Hover Glow ─── */
+.skill-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.skill-card:hover {
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 
+    0 0 40px rgba(124, 58, 237, 0.12),
+    0 20px 60px rgba(0, 0, 0, 0.5);
+  transform: translateY(-4px);
+}
