@@ -90,6 +90,7 @@ func main() {
 	yank := handler.NewSkillYankHandler(pool)
 	namespaces := handler.NewNamespaceHandler(pool)
 	admin := handler.NewAdminHandler(pool)
+	bootstrap := handler.NewBootstrapHandler()
 
 	r := chi.NewRouter()
 	r.Use(chimiddleware.Logger)
@@ -113,6 +114,9 @@ func main() {
 	// ── Public: Token creation ──
 	r.Post("/v1/tokens", tokens.Create)
 
+	// ── Public: Bootstrap (Discovery Skill auto-installation) ──
+	r.Get("/v1/bootstrap/discovery", bootstrap.GetDiscoverySkill)
+	r.Get("/v1/bootstrap/check", bootstrap.CheckBootstrap)
 
 	// ── Public: Auth (no token needed) ──
 	r.Post("/v1/auth/github", auth.GitHubDeviceStart)
