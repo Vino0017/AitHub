@@ -62,6 +62,7 @@ type Skill struct {
 	AvgRating          float64    `json:"avg_rating"`
 	RatingCount        int        `json:"rating_count"`
 	OutcomeSuccessRate float64    `json:"outcome_success_rate"`
+	CredibilityScore   float64    `json:"credibility_score"`
 	LatestVersion      string     `json:"latest_version"`
 	ForkCount          int        `json:"fork_count"`
 	Status             string     `json:"status"` // active | yanked | removed
@@ -94,18 +95,22 @@ type Revision struct {
 
 // Rating represents a usage feedback entry.
 type Rating struct {
-	ID             uuid.UUID `json:"id"`
-	SkillID        uuid.UUID `json:"skill_id"`
-	RevisionID     uuid.UUID `json:"revision_id"`
-	TokenID        uuid.UUID `json:"token_id"`
-	Score          int       `json:"score"`
-	Outcome        string    `json:"outcome"` // success | partial | failure
-	TaskType       string    `json:"task_type"`
-	ModelUsed      string    `json:"model_used"`
-	TokensConsumed int       `json:"tokens_consumed"`
-	FailureReason  string    `json:"failure_reason,omitempty"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	ID              uuid.UUID       `json:"id"`
+	SkillID         uuid.UUID       `json:"skill_id"`
+	RevisionID      uuid.UUID       `json:"revision_id"`
+	TokenID         uuid.UUID       `json:"token_id"`
+	Score           int             `json:"score"`
+	Outcome         string          `json:"outcome"` // success | partial | failure
+	TaskType        string          `json:"task_type"`
+	ModelUsed       string          `json:"model_used"`
+	TokensConsumed  int             `json:"tokens_consumed"`
+	FailureReason   string          `json:"failure_reason,omitempty"`
+	ConfidenceScore float64         `json:"confidence_score"`
+	ExecutionTimeMs int             `json:"execution_time_ms,omitempty"`
+	ErrorDetails    json.RawMessage `json:"error_details,omitempty"`
+	ContextMetadata json.RawMessage `json:"context_metadata,omitempty"`
+	CreatedAt       time.Time       `json:"created_at"`
+	UpdatedAt       time.Time       `json:"updated_at"`
 }
 
 // Platform describes OS and architecture compatibility.
