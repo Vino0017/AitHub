@@ -138,6 +138,8 @@ func main() {
 		r.Get("/v1/skills/{namespace}/{name}/revisions", revisions.List)
 		r.Get("/v1/skills/{namespace}/{name}/revisions/{version}", revisions.GetVersion)
 		r.Get("/v1/skills/{namespace}/{name}/forks", forks.ListForks)
+		r.Get("/v1/skills/{namespace}/{name}/fork-tree", forks.GetForkTree)
+		r.Get("/v1/skills/{namespace}/{name}/fork-ranking", forks.GetForkRanking)
 		r.Get("/v1/namespaces/{name}", namespaces.Get)
 
 		// Rating (anonymous can rate, but won't count toward ranking)

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -146,4 +147,204 @@ func (h *ForkHandler) ListForks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{"forks": forks})
+}
+
+// GetForkTree returns the complete fork tree (ancestors and descendants).
+// GET /v1/skills/{namespace}/{name}/fork-tree
+func (h *ForkHandler) GetForkTree(w http.ResponseWriter, r *http.Request) {
+	skillID, ok := checkSkillAccess(h.pool, w, r)
+	if !ok {
+		return
+	}
+
+	// Get ancestors (parent, grandparent, etc.)
+	ancestors := h.getAncestors(r.Context(), skillID)
+
+	// Get descendants (direct forks and their forks)
+	descendants := h.getDescendants(r.Context(), skillID, 0, 3) // Max depth 3
+
+	// Get current skill info
+	var ns, name string
+	var rating float64
+	var installs, forkCount int
+	h.pool.QueryRow(r.Context(),
+		`SELECT n.name, s.name, s.avg_rating, s.install_count, s.fork_count
+		 FROM skills s JOIN namespaces n ON s.namespace_id = n.id
+		 WHERE s.id = $1`, skillID).Scan(&ns, &name, &rating, &installs, &forkCount)
+
+	current := map[string]interface{}{
+		"id":           skillID,
+		"full_name":    ns + "/" + name,
+		"avg_rating":   rating,
+		"install_count": installs,
+		"fork_count":   forkCount,
+	}
+
+	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"current":     current,
+		"ancestors":   ancestors,
+		"descendants": descendants,
+	})
+}
+
+func (h *ForkHandler) getAncestors(ctx context.Context, skillID uuid.UUID) []map[string]interface{} {
+	ancestors := []map[string]interface{}{}
+
+	currentID := skillID
+	for i := 0; i < 10; i++ { // Max 10 levels up
+		var parentID *uuid.UUID
+		var ns, name string
+		var rating float64
+		var installs int
+
+		err := h.pool.QueryRow(ctx,
+			`SELECT s.forked_from, n.name, s.name, s.avg_rating, s.install_count
+			 FROM skills s JOIN namespaces n ON s.namespace_id = n.id
+			 WHERE s.id = $1`, currentID).Scan(&parentID, &ns, &name, &rating, &installs)
+		if err != nil || parentID == nil {
+			break
+		}
+
+		ancestors = append([]map[string]interface{}{{
+			"id":           *parentID,
+			"full_name":    ns + "/" + name,
+			"avg_rating":   rating,
+			"install_count": installs,
+		}}, ancestors...) // Prepend to get root first
+
+		currentID = *parentID
+	}
+
+	return ancestors
+}
+
+func (h *ForkHandler) getDescendants(ctx context.Context, skillID uuid.UUID, depth, maxDepth int) []map[string]interface{} {
+	if depth >= maxDepth {
+		return []map[string]interface{}{}
+	}
+
+	rows, err := h.pool.Query(ctx,
+		`SELECT s.id, n.name, s.name, s.avg_rating, s.install_count, s.fork_count
+		 FROM skills s JOIN namespaces n ON s.namespace_id = n.id
+		 WHERE s.forked_from = $1 AND s.status = 'active'
+		 ORDER BY s.install_count DESC`, skillID)
+	if err != nil {
+		return []map[string]interface{}{}
+	}
+	defer rows.Close()
+
+	descendants := []map[string]interface{}{}
+	for rows.Next() {
+		var id uuid.UUID
+		var ns, name string
+		var rating float64
+		var installs, forkCount int
+		rows.Scan(&id, &ns, &name, &rating, &installs, &forkCount)
+
+		fork := map[string]interface{}{
+			"id":           id,
+			"full_name":    ns + "/" + name,
+			"avg_rating":   rating,
+			"install_count": installs,
+			"fork_count":   forkCount,
+			"depth":        depth + 1,
+		}
+
+		// Recursively get children
+		children := h.getDescendants(ctx, id, depth+1, maxDepth)
+		if len(children) > 0 {
+			fork["children"] = children
+		}
+
+		descendants = append(descendants, fork)
+	}
+
+	return descendants
+}
+
+// GetForkRanking returns forks ranked by quality (rating * success_rate * installs).
+// GET /v1/skills/{namespace}/{name}/fork-ranking
+func (h *ForkHandler) GetForkRanking(w http.ResponseWriter, r *http.Request) {
+	skillID, ok := checkSkillAccess(h.pool, w, r)
+	if !ok {
+		return
+	}
+
+	// Get all forks in the tree (including transitive forks)
+	allForks := h.getAllForksInTree(r.Context(), skillID)
+
+	// Rank by quality score
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT s.id, n.name, s.name, s.avg_rating, s.outcome_success_rate, s.install_count, s.fork_count, s.created_at
+		 FROM skills s JOIN namespaces n ON s.namespace_id = n.id
+		 WHERE s.id = ANY($1) AND s.status = 'active'
+		 ORDER BY (s.avg_rating * s.outcome_success_rate * LOG(1 + s.install_count)) DESC
+		 LIMIT 20`, allForks)
+	if err != nil {
+		helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to rank forks", "")
+		return
+	}
+	defer rows.Close()
+
+	ranking := []map[string]interface{}{}
+	rank := 1
+	for rows.Next() {
+		var id uuid.UUID
+		var ns, name string
+		var rating, successRate float64
+		var installs, forkCount int
+		var createdAt interface{}
+		rows.Scan(&id, &ns, &name, &rating, &successRate, &installs, &forkCount, &createdAt)
+
+		ranking = append(ranking, map[string]interface{}{
+			"rank":                rank,
+			"id":                  id,
+			"full_name":           ns + "/" + name,
+			"avg_rating":          rating,
+			"outcome_success_rate": successRate,
+			"install_count":       installs,
+			"fork_count":          forkCount,
+			"quality_score":       rating * successRate * (1 + float64(installs)),
+			"created_at":          createdAt,
+		})
+		rank++
+	}
+
+	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{"ranking": ranking})
+}
+
+func (h *ForkHandler) getAllForksInTree(ctx context.Context, rootID uuid.UUID) []uuid.UUID {
+	// BFS to collect all forks
+	visited := make(map[uuid.UUID]bool)
+	queue := []uuid.UUID{rootID}
+	allForks := []uuid.UUID{}
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		if visited[current] {
+			continue
+		}
+		visited[current] = true
+		allForks = append(allForks, current)
+
+		// Get direct forks
+		rows, err := h.pool.Query(ctx,
+			`SELECT id FROM skills WHERE forked_from = $1 AND status = 'active'`, current)
+		if err != nil {
+			continue
+		}
+
+		for rows.Next() {
+			var forkID uuid.UUID
+			rows.Scan(&forkID)
+			if !visited[forkID] {
+				queue = append(queue, forkID)
+			}
+		}
+		rows.Close()
+	}
+
+	return allForks
 }
