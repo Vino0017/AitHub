@@ -1,6 +1,5 @@
--- 011_add_security_audit_log.sql
--- 添加安全审计日志表
-
+-- +goose Up
+-- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS security_audit_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     revision_id UUID NOT NULL REFERENCES revisions(id) ON DELETE CASCADE,
@@ -18,3 +17,9 @@ CREATE INDEX idx_security_audit_log_created_at ON security_audit_log(created_at 
 
 -- 用于分析攻击模式
 CREATE INDEX idx_security_audit_log_event_created ON security_audit_log(event_type, created_at DESC);
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE IF EXISTS security_audit_log CASCADE;
+-- +goose StatementEnd
