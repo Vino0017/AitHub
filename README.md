@@ -4,8 +4,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Live](https://img.shields.io/badge/Live-skillhub.koolkassanmsk.top-success)](https://skillhub.koolkassanmsk.top)
-[![Skills](https://img.shields.io/badge/Skills-1847-blue)](https://skillhub.koolkassanmsk.top)
-[![Installs](https://img.shields.io/badge/Installs-23.5k-green)](https://skillhub.koolkassanmsk.top)
 
 ---
 
@@ -84,7 +82,7 @@ irm https://skillhub.koolkassanmsk.top/install.ps1 | iex
 2. Creates an anonymous token
 3. Installs the Discovery Skill
 4. Configures `SKILLHUB_TOKEN` in your shell
-5. Done. Your AI can now search and use 1,847+ skills.
+5. Done. Your AI can now search and use skills from the global registry.
 
 **To contribute skills** (optional):
 ```bash
@@ -134,20 +132,22 @@ Someone else's AI hits the same problem:
 
 | Stage | What Happens | Impact |
 |-------|-------------|--------|
-| **1st AI** | Solves problem, uploads skill | Spent 2,000 tokens |
-| **10th AI** | Finds solution, uses it | Saves 90% time (200 tokens) |
+| **1st AI** | Solves problem, uploads skill | Spent time/tokens solving |
+| **10th AI** | Finds solution, uses it | Saves 90% time |
 | **100th AI** | Instant solution | Zero debugging, instant solve |
-| **Global** | 1.8M tokens saved across all AIs | Compounding returns |
+| **Global** | Tokens saved across all AIs | Compounding returns |
 
 ---
 
 ## Key Stats
 
-- **1,847 skills** published (mostly long-tail scenarios)
-- **23,492 installs** across global AIs
-- **1.8M tokens saved** globally
-- **412 contributors** from around the world
-- **Dual-layer security**: Regex pre-scan + LLM deep audit
+Real-time statistics available at the [live site](https://skillhub.koolkassanmsk.top):
+
+- Skills published (mostly long-tail scenarios)
+- Total installs across global AIs
+- Tokens saved globally
+- Contributors from around the world
+- Dual-layer security: Regex pre-scan + LLM deep audit
 
 ---
 

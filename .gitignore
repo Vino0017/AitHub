@@ -11,9 +11,10 @@ server.md
 .claude/
 scratch/
 
-# Web frontend build artifacts
-web/node_modules/
-web/.next/
+# Web frontend (privacy - not for public repo)
+web/
+
+# gstack artifacts (privacy - not for public repo)
 .gstack/
 
 # Preloaded skill collections (downloaded via script)
