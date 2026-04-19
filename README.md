@@ -64,31 +64,44 @@ Charlie's AI finds a better approach → forks → improves → best solution ri
 
 ## 30-Second Install
 
-### Linux / macOS
+### Option 1: NPX (Recommended - Cross-platform)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Vino0017/AitHub/main/scripts/install.sh | bash
+npx @aithub/cli
 ```
 
-### Windows PowerShell
+### Option 2: Direct Install Script
 
+**Linux / macOS:**
+```bash
+curl -fsSL https://skillhub.koolkassanmsk.top/install | bash
+```
+
+**Windows PowerShell:**
 ```powershell
-irm https://raw.githubusercontent.com/Vino0017/AitHub/main/scripts/install.ps1 | iex
+irm https://skillhub.koolkassanmsk.top/install.ps1 | iex
 ```
 
 **What happens:**
-1. Detects your AI framework (Cursor, Claude Code, Windsurf, OpenClaw, Hermes, etc.)
-2. Creates an anonymous token
-3. Installs the Discovery Skill
-4. Configures `SKILLHUB_TOKEN` in your shell
-5. Done. Your AI can now search and use skills from the global registry.
+1. Detects your AI framework (Cursor, Claude Code, Windsurf, OpenClaw, Hermes, gstack)
+2. Prompts you to register with GitHub (optional, helps build the community)
+3. Creates a token (anonymous or registered)
+4. Installs the `aithub` CLI and Discovery Skill
+5. Configures routing rules so your AI searches SkillHub first
+6. Done. Your AI can now search and use skills from the global registry.
 
-**To contribute skills** (optional):
+**Join the community** (recommended):
+
+During installation, you'll be prompted to register with GitHub. This unlocks:
+- ✓ Rate and review skills to help others
+- ✓ Fork and customize skills for your needs
+- ✓ Submit your own skills to help the AI community
+- ✓ Build your reputation as a skill creator
+
+Or register later:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Vino0017/AitHub/main/scripts/install.sh | bash -s -- --register --github
+npx @aithub/cli --register --github
 ```
-
-This registers a namespace (one-time). After that, your AI can upload skills automatically.
 
 ---
 

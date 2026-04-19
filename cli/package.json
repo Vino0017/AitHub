@@ -1,0 +1,30 @@
+{
+  "name": "@aithub/cli",
+  "version": "1.0.1",
+  "description": "AitHub CLI installer - AI-First Skill Registry",
+  "bin": {
+    "aithub-install": "install.js"
+  },
+  "scripts": {
+    "test": "node install.js --help"
+  },
+  "keywords": [
+    "aithub",
+    "skillhub",
+    "ai",
+    "skills",
+    "agent",
+    "claude",
+    "cursor",
+    "windsurf"
+  ],
+  "author": "AitHub",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/skillhub.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

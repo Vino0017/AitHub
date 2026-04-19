@@ -22,6 +22,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       DATABASE_URL: postgres://skillhub:skillhub_dev@postgres:5432/skillhub?sslmode=disable
       PORT: "8080"

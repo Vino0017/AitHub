@@ -14,15 +14,29 @@ if [ "$BASH_VERSION_MAJOR" -lt 4 ]; then
   echo ""
 
   # Try to find bash 4.0+
+  BASH4=""
   if [ -x "/opt/homebrew/bin/bash" ]; then
-    echo "→ Found bash 4.0+ at /opt/homebrew/bin/bash, switching..."
-    exec /opt/homebrew/bin/bash "$0" "$@"
+    BASH4="/opt/homebrew/bin/bash"
   elif [ -x "/usr/local/bin/bash" ]; then
-    echo "→ Found bash 4.0+ at /usr/local/bin/bash, switching..."
-    exec /usr/local/bin/bash "$0" "$@"
+    BASH4="/usr/local/bin/bash"
+  fi
+
+  if [ -n "$BASH4" ]; then
+    # Check if we're being piped from curl
+    if [ ! -t 0 ]; then
+      echo "→ Found bash 4.0+ at $BASH4"
+      echo "  Re-run with: curl -fsSL https://skillhub.koolkassanmsk.top/install | $BASH4"
+      echo "  Or install bash 4.0+ as default: brew install bash"
+      echo ""
+      echo "  Continuing with bash 3.x (compatible mode)..."
+      echo ""
+    else
+      echo "→ Found bash 4.0+ at $BASH4, switching..."
+      exec "$BASH4" "$0" "$@"
+    fi
   else
     echo "→ Install bash 4.0+ with: brew install bash"
-    echo "  Continuing with bash 3.x (may have limited functionality)..."
+    echo "  Continuing with bash 3.x (compatible mode)..."
     echo ""
   fi
 fi
@@ -116,48 +130,96 @@ fi
 if [ -z "${SKILLHUB_TOKEN:-}" ]; then
   echo ""
   echo "╔══════════════════════════════════════════════════════════╗"
-  echo "║  Registration Options                                    ║"
+  echo "║  Join the AI Skills Community                           ║"
   echo "╚══════════════════════════════════════════════════════════╝"
   echo ""
-  echo "You can:"
-  echo "  1. Continue with anonymous access (search & install only)"
-  echo "  2. Register now for full features (rate, fork, submit)"
+  echo "AitHub is building the world's largest AI skills registry."
+  echo "By registering, you can:"
   echo ""
-  echo "To register, press Ctrl+C and run:"
-  echo "  bash <(curl -fsSL $SKILLHUB_API/install) --register --github"
+  echo "  ✓ Rate and review skills to help others"
+  echo "  ✓ Fork and customize skills for your needs"
+  echo "  ✓ Submit your own skills to help the AI community"
+  echo "  ✓ Build your reputation as a skill creator"
   echo ""
-  echo -n "Continue with anonymous access? [Y/n] "
+  echo "Your contributions help thousands of AI developers worldwide."
+  echo ""
+  echo "Options:"
+  echo "  1. Register now with GitHub (recommended)"
+  echo "  2. Continue with anonymous access (search & install only)"
+  echo ""
+  echo -n "Register with GitHub? [Y/n] "
 
   # Read user input with timeout
-  if read -t 10 -r RESPONSE; then
+  if read -t 15 -r RESPONSE; then
     case "$RESPONSE" in
-      [Nn]*)
+      [Yy]*|"")
         echo ""
-        echo "Installation cancelled. To register, run:"
-        echo "  bash <(curl -fsSL $SKILLHUB_API/install) --register --github"
-        exit 0
+        echo "→ Starting GitHub OAuth Device Flow..."
+        DEVICE_RESP=$(curl -sS "$SKILLHUB_API/v1/auth/github" -X POST -H "Content-Type: application/json")
+        USER_CODE=$(echo "$DEVICE_RESP" | grep -o '"user_code":"[^"]*"' | cut -d'"' -f4)
+        VERIFY_URI=$(echo "$DEVICE_RESP" | grep -o '"verification_uri":"[^"]*"' | cut -d'"' -f4)
+        DEVICE_CODE=$(echo "$DEVICE_RESP" | grep -o '"device_code":"[^"]*"' | cut -d'"' -f4)
+
+        if [ -z "$USER_CODE" ]; then
+          echo "  ✗ Failed to start OAuth flow. Continuing with anonymous access..."
+        else
+          echo ""
+          echo "  ┌────────────────────────────────────┐"
+          echo "  │ Open: $VERIFY_URI"
+          echo "  │ Enter code: $USER_CODE"
+          echo "  └────────────────────────────────────┘"
+          echo ""
+          echo "  Waiting for authorization (60s timeout)..."
+
+          for i in $(seq 1 12); do
+            sleep 5
+            POLL_RESP=$(curl -sS "$SKILLHUB_API/v1/auth/github/poll" -X POST \
+              -H "Content-Type: application/json" \
+              -d "{\"device_code\":\"$DEVICE_CODE\"}")
+            STATUS=$(echo "$POLL_RESP" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+
+            if [ "$STATUS" = "complete" ]; then
+              SKILLHUB_TOKEN=$(echo "$POLL_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+              NAMESPACE=$(echo "$POLL_RESP" | grep -o '"namespace":"[^"]*"' | cut -d'"' -f4)
+              echo ""
+              echo "  ✓ Registration successful!"
+              echo "  ✓ Namespace: $NAMESPACE"
+              break
+            fi
+          done
+
+          if [ -z "$SKILLHUB_TOKEN" ]; then
+            echo ""
+            echo "  ⏱ Timeout or authorization not completed."
+            echo "  Continuing with anonymous access..."
+          fi
+        fi
         ;;
     esac
   fi
 
-  echo ""
-  echo "→ Creating anonymous token..."
-  TOKEN_RESP=$(curl -sS "$SKILLHUB_API/v1/tokens" -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"device_id\":\"install-$(date +%s)\"}")
-  SKILLHUB_TOKEN=$(echo "$TOKEN_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
-
-  if [ -n "$SKILLHUB_TOKEN" ]; then
-    echo "  ✓ Anonymous token created"
+  # Fallback to anonymous if no token yet
+  if [ -z "$SKILLHUB_TOKEN" ]; then
     echo ""
-    echo "  ⚠ Anonymous limitations:"
-    echo "    • Can search and install skills"
-    echo "    • Cannot rate, fork, or submit skills"
-    echo "    • To unlock full features, register with:"
-    echo "      bash <(curl -fsSL $SKILLHUB_API/install) --register --github"
-  else
-    echo "  ✗ Failed to create token"
-    exit 1
+    echo "→ Creating anonymous token..."
+    TOKEN_RESP=$(curl -sS "$SKILLHUB_API/v1/tokens" -X POST \
+      -H "Content-Type: application/json" \
+      -d "{\"device_id\":\"install-$(date +%s)\"}")
+    SKILLHUB_TOKEN=$(echo "$TOKEN_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+
+    if [ -n "$SKILLHUB_TOKEN" ]; then
+      echo "  ✓ Anonymous token created"
+      echo ""
+      echo "  ⚠ Anonymous limitations:"
+      echo "    • Can search and install skills"
+      echo "    • Cannot rate, fork, or submit skills"
+      echo ""
+      echo "  To register later and unlock full features:"
+      echo "    npx @aithub/cli --register --github"
+    else
+      echo "  ✗ Failed to create token"
+      exit 1
+    fi
   fi
 fi
 
