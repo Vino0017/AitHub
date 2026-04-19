@@ -12,6 +12,7 @@ import (
 	"github.com/skillhub/api/internal/helpers"
 	"github.com/skillhub/api/internal/middleware"
 	"github.com/skillhub/api/internal/models"
+	"github.com/skillhub/api/internal/security"
 	"github.com/skillhub/api/internal/usage"
 	"github.com/skillhub/api/internal/validation"
 )
@@ -108,8 +109,12 @@ func (h *SkillDetailHandler) Content(w http.ResponseWriter, r *http.Request) {
 		go h.usageTracker.LogUsage(context.Background(), skill["id"].(uuid.UUID), tokenID, "install")
 	}
 
+	// 清理内容以防止 prompt 注入
+	detector := security.NewPromptInjectionDetector()
+	sanitizedContent := detector.SanitizeContent(content)
+
 	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"namespace": nsName, "name": skillName, "version": version, "content": content,
+		"namespace": nsName, "name": skillName, "version": version, "content": sanitizedContent,
 	})
 }
 
