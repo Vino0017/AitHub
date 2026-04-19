@@ -47,8 +47,8 @@
 }
 
 @keyframes border-glow {
-  0%, 100% { border-color: rgba(124, 58, 237, 0.2); }
-  50% { border-color: rgba(236, 72, 153, 0.3); }
+  0%, 100% { border-color: rgba(59, 130, 246, 0.2); }
+  50% { border-color: rgba(6, 182, 212, 0.3); }
 }
 
 :root {
@@ -96,9 +96,9 @@ body {
 }
 
 .glass-card:hover {
-  border-color: rgba(124, 58, 237, 0.25);
+  border-color: rgba(59, 130, 246, 0.25);
   box-shadow: 
-    0 8px 40px rgba(124, 58, 237, 0.1),
+    0 8px 40px rgba(59, 130, 246, 0.1),
     0 4px 30px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
@@ -110,15 +110,15 @@ body {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.3), rgba(236, 72, 153, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), rgba(6, 182, 212, 0.2), transparent);
 }
 
 /* ─── Background Grid ─── */
 .bg-grid-pattern {
   background-size: 60px 60px;
   background-image: 
-    linear-gradient(to right, rgba(124, 58, 237, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(124, 58, 237, 0.04) 1px, transparent 1px);
+    linear-gradient(to right, rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.04) 1px, transparent 1px);
   mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
 }
@@ -132,7 +132,7 @@ body {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), rgba(236, 72, 153, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), rgba(6, 182, 212, 0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
   z-index: -1;
@@ -145,19 +145,19 @@ body {
 
 /* ─── Pill Badge ─── */
 .pill-badge {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(236, 72, 153, 0.1));
-  border: 1px solid rgba(124, 58, 237, 0.25);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.25);
   backdrop-filter: blur(10px);
 }
 
 /* ─── CTA Buttons ─── */
 .btn-primary {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  box-shadow: 0 0 30px rgba(124, 58, 237, 0.4), 0 0 60px rgba(124, 58, 237, 0.15);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.15);
   transition: all 0.3s;
 }
 .btn-primary:hover {
-  box-shadow: 0 0 40px rgba(124, 58, 237, 0.6), 0 0 80px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.6), 0 0 80px rgba(59, 130, 246, 0.25);
   transform: translateY(-1px);
 }
 
@@ -168,28 +168,28 @@ body {
 }
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(124, 58, 237, 0.4);
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
 /* ─── Terminal Window ─── */
 .terminal-window {
   background: linear-gradient(180deg, #0c0c1a, #080812);
-  border: 1px solid rgba(124, 58, 237, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.15);
   box-shadow: 
     0 20px 80px rgba(0, 0, 0, 0.8),
-    0 0 40px rgba(124, 58, 237, 0.08);
+    0 0 40px rgba(59, 130, 246, 0.08);
 }
 
 /* ─── Feature Number Badge ─── */
 .step-number {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(236, 72, 153, 0.15));
-  border: 1px solid rgba(124, 58, 237, 0.3);
-  box-shadow: 0 0 20px rgba(124, 58, 237, 0.15);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.15));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
 }
 
 /* ─── Stat Counter ─── */
 .stat-glow {
-  text-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
 }
 
 /* ─── Scrollbar ─── */
@@ -201,9 +201,9 @@ body {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .skill-card:hover {
-  border-color: rgba(124, 58, 237, 0.3);
+  border-color: rgba(59, 130, 246, 0.3);
   box-shadow: 
-    0 0 40px rgba(124, 58, 237, 0.12),
+    0 0 40px rgba(59, 130, 246, 0.12),
     0 20px 60px rgba(0, 0, 0, 0.5);
   transform: translateY(-4px);
 }
