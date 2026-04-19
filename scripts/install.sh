@@ -124,20 +124,22 @@ fi
 echo ""
 echo "── Detecting AI Agent Frameworks ──"
 
-declare -A FRAMEWORK_DIRS
-FRAMEWORK_DIRS=(
-  ["gstack"]="$HOME/.gstack/skills"
-  ["openclaw"]="$HOME/.openclaw/skills"
-  ["hermes"]="$HOME/.hermes/skills"
-  ["claude-code"]="$HOME/.claude/skills"
-  ["cursor"]="$HOME/.cursor/skills"
-  ["windsurf"]="$HOME/.windsurf/skills"
-)
-
+# Use simple arrays for bash 3.2 compatibility
+FRAMEWORKS="gstack openclaw hermes claude-code cursor windsurf"
 INSTALLED_COUNT=0
 FAILED_COUNT=0
-for fw in "${!FRAMEWORK_DIRS[@]}"; do
-  dir="${FRAMEWORK_DIRS[$fw]}"
+
+for fw in $FRAMEWORKS; do
+  case "$fw" in
+    gstack)      dir="$HOME/.gstack/skills" ;;
+    openclaw)    dir="$HOME/.openclaw/skills" ;;
+    hermes)      dir="$HOME/.hermes/skills" ;;
+    claude-code) dir="$HOME/.claude/skills" ;;
+    cursor)      dir="$HOME/.cursor/skills" ;;
+    windsurf)    dir="$HOME/.windsurf/skills" ;;
+    *) continue ;;
+  esac
+
   parent_dir="$(dirname "$dir")"
   if [ -d "$parent_dir" ]; then
     echo "  ✓ $fw detected → $dir"
