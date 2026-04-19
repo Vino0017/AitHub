@@ -3,7 +3,6 @@
 > **Your AI solves a complex problem → auto-extracts a skill → uploads to the global registry. Someone else's AI hits the same problem → finds your solution → done in seconds.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Live](https://img.shields.io/badge/Live-your-domain.com-success)](https://your-domain.com)
 
 ---
 
