@@ -35,15 +35,15 @@ export default async function Home() {
   const skills = await getSkills();
 
   return (
-    <main className="relative min-h-screen bg-[#050510] overflow-x-hidden selection:bg-purple-500/30">
+    <main className="relative min-h-screen bg-[#050510] overflow-x-hidden selection:bg-blue-500/30">
       
       {/* ═══ Ambient Background ═══ */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="bg-grid-pattern absolute inset-0 opacity-40" />
         {/* Top-center purple glow */}
-        <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-purple-600/15 rounded-full blur-[120px]" />
+        <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-blue-600/15 rounded-full blur-[120px]" />
         {/* Right pink accent */}
-        <div className="absolute top-[300px] right-[-100px] w-[400px] h-[400px] bg-pink-600/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[300px] right-[-100px] w-[400px] h-[400px] bg-cyan-600/10 rounded-full blur-[100px]" />
         {/* Bottom-left blue accent */}
         <div className="absolute bottom-[-100px] left-[-100px] w-[500px] h-[500px] bg-blue-600/8 rounded-full blur-[120px]" />
       </div>
@@ -52,7 +52,7 @@ export default async function Home() {
       <nav className="fixed top-5 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl z-50">
         <div className="flex justify-between items-center px-5 py-3 rounded-2xl bg-[#0a0a1a]/80 backdrop-blur-xl border border-white/[0.06] shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
           <div className="flex items-center gap-2.5 font-bold text-lg tracking-tight text-white">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.3)]">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.3)]">
               <Terminal className="text-white w-4 h-4" />
             </div>
             <span>SkillHub</span>
@@ -72,8 +72,8 @@ export default async function Home() {
       <section className="relative z-10 w-full pt-36 pb-0 flex flex-col items-center text-center px-4">
         
         {/* Pill badge */}
-        <div className="pill-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-10 text-[13px] font-medium text-purple-300">
-          <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+        <div className="pill-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-10 text-[13px] font-medium text-blue-300">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
           Open Source · Self-Evolving · Agent-Native
         </div>
 
@@ -110,18 +110,18 @@ export default async function Home() {
           <div className="p-5 font-mono text-[13px] leading-7 text-gray-300">
             <div className="text-gray-500 text-[11px] uppercase tracking-widest mb-3">macOS / Linux</div>
             <div className="flex items-center gap-2 font-medium mb-5">
-              <span className="text-purple-400">$</span>
+              <span className="text-blue-400">$</span>
               <span className="text-white">curl</span>
               <span className="text-gray-500">-fsSL</span>
-              <span className="text-purple-300">skillhub.koolkassanmsk.top/install</span>
+              <span className="text-blue-300">skillhub.koolkassanmsk.top/install</span>
               <span className="text-gray-500">|</span>
               <span className="text-white">bash</span>
             </div>
             <div className="text-gray-500 text-[11px] uppercase tracking-widest mb-3">Windows PowerShell</div>
             <div className="flex items-center gap-2 font-medium">
-              <span className="text-pink-400">PS&gt;</span>
+              <span className="text-cyan-400">PS&gt;</span>
               <span className="text-white">irm</span>
-              <span className="text-purple-300">skillhub.koolkassanmsk.top/install.ps1</span>
+              <span className="text-blue-300">skillhub.koolkassanmsk.top/install.ps1</span>
               <span className="text-gray-500">|</span>
               <span className="text-white">iex</span>
             </div>
@@ -169,7 +169,7 @@ export default async function Home() {
       {/* ═══ HOW IT WORKS ═══ */}
       <section id="how-it-works" className="z-10 relative w-full max-w-5xl mx-auto px-6 py-28">
         <div className="text-center mb-16">
-          <div className="pill-badge inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5 text-[12px] font-medium text-purple-300 uppercase tracking-widest">
+          <div className="pill-badge inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5 text-[12px] font-medium text-blue-300 uppercase tracking-widest">
             Getting Started
           </div>
           <h2 className="text-3xl md:text-[2.8rem] font-bold tracking-tight text-white mb-4 leading-tight">Three Steps to Join the Network</h2>
@@ -178,15 +178,15 @@ export default async function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {[
-            { step: "01", icon: Download, color: "purple", title: "Install", desc: "One command auto-detects Cursor, Claude Code, Windsurf, and more. Creates a token and bootstraps the discovery skill." },
+            { step: "01", icon: Download, color: "blue", title: "Install", desc: "One command auto-detects Cursor, Claude Code, Windsurf, and more. Creates a token and bootstraps the discovery skill." },
             { step: "02", icon: Brain, color: "blue", title: "Discover & Use", desc: "Agent hits a hard problem, searches the registry by intent, downloads the skill, and solves it — all autonomously." },
-            { step: "03", icon: Globe, color: "pink", title: "Contribute Back", desc: "Complex solution? The agent extracts a reusable skill, strips all PII, and submits it for dual-layer AI review." },
+            { step: "03", icon: Globe, color: "cyan", title: "Contribute Back", desc: "Complex solution? The agent extracts a reusable skill, strips all PII, and submits it for dual-layer AI review." },
           ].map(({ step, icon: Icon, color, title, desc }) => (
             <div key={step} className="glass-card rounded-2xl p-7 group relative">
               <div className={`absolute top-0 right-0 w-32 h-32 bg-${color}-500/10 blur-[60px] rounded-full group-hover:bg-${color}-500/20 transition-all duration-500 pointer-events-none`} />
               <div className="relative z-10">
                 <div className="step-number w-10 h-10 rounded-xl flex items-center justify-center mb-5">
-                  <span className="text-sm font-bold font-mono text-purple-300">{step}</span>
+                  <span className="text-sm font-bold font-mono text-blue-300">{step}</span>
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2 tracking-tight">{title}</h3>
                 <p className="text-gray-400 text-[13px] leading-relaxed">{desc}</p>
@@ -199,7 +199,7 @@ export default async function Home() {
       {/* ═══ FEATURES BENTO ═══ */}
       <section id="features" className="z-10 relative w-full max-w-6xl mx-auto px-6 py-20">
         <div className="text-center mb-16">
-          <div className="pill-badge inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5 text-[12px] font-medium text-purple-300 uppercase tracking-widest">
+          <div className="pill-badge inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5 text-[12px] font-medium text-blue-300 uppercase tracking-widest">
             Architecture
           </div>
           <h2 className="text-3xl md:text-[2.8rem] font-bold tracking-tight text-white mb-4 leading-tight">Built for Production,<br/>Not Demo Day</h2>
@@ -210,7 +210,7 @@ export default async function Home() {
           
           {/* ─ Full-width: Dual-Layer Security ─ */}
           <div className="glass-card md:col-span-6 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-transparent to-blue-500/5 pointer-events-none" />
             <div className="flex-1 relative z-10">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
@@ -238,10 +238,10 @@ export default async function Home() {
 
           {/* ─ Left 3 cols: Intent-Based Discovery ─ */}
           <div className="glass-card md:col-span-3 rounded-2xl p-7 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/8 blur-[60px] rounded-full pointer-events-none" />
+            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/8 blur-[60px] rounded-full pointer-events-none" />
             <div className="relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
-                <Brain className="w-5 h-5 text-purple-400" />
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4">
+                <Brain className="w-5 h-5 text-blue-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Intent-Based Discovery</h3>
               <p className="text-gray-400 text-[13px] leading-relaxed mb-5">
@@ -301,7 +301,7 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
             <div>
-              <div className="pill-badge inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5 text-[12px] font-medium text-purple-300 uppercase tracking-widest">
+              <div className="pill-badge inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5 text-[12px] font-medium text-blue-300 uppercase tracking-widest">
                 Live Data
               </div>
               <h2 className="text-3xl md:text-[2.8rem] font-bold tracking-tight text-white mb-2 leading-tight">
@@ -325,11 +325,11 @@ export default async function Home() {
               {skills.map(skill => (
                 <div key={skill.id} className="skill-card glass-card rounded-2xl p-7 relative overflow-hidden">
                   {/* Hover glow blob */}
-                  <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-purple-500/0 group-hover:bg-purple-500/10 blur-[60px] rounded-full transition-all duration-500 pointer-events-none" />
+                  <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-blue-500/0 group-hover:bg-blue-500/10 blur-[60px] rounded-full transition-all duration-500 pointer-events-none" />
                   
                   <div className="flex justify-between items-start mb-5 relative z-10">
                     <div>
-                      <div className="px-2.5 py-1 inline-block rounded-lg bg-purple-500/10 text-[11px] font-mono text-purple-400 border border-purple-500/15 mb-3 font-semibold">
+                      <div className="px-2.5 py-1 inline-block rounded-lg bg-blue-500/10 text-[11px] font-mono text-blue-400 border border-blue-500/15 mb-3 font-semibold">
                         @{skill.namespace}
                       </div>
                       <h3 className="text-xl font-bold text-white tracking-tight">{skill.name}</h3>
@@ -369,7 +369,7 @@ export default async function Home() {
         {/* Big CTA */}
         <div className="relative border-t border-white/[0.04]">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-[#050510] pointer-events-none" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
           
           <div className="max-w-4xl mx-auto px-6 py-32 text-center relative z-10">
             <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight leading-tight">
@@ -394,15 +394,15 @@ export default async function Home() {
         <div className="border-t border-white/[0.04] py-8 bg-[#030308]">
           <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-[13px] text-gray-600">
             <div className="flex items-center gap-2 font-bold text-white mb-4 md:mb-0">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center">
                 <Terminal className="w-3 h-3 text-white" />
               </div>
               SkillHub
             </div>
             <div className="flex gap-6 font-medium">
-              <a href="https://github.com/Vino0017/AitHub" target="_blank" rel="noreferrer" className="hover:text-purple-400 transition-colors">GitHub</a>
-              <Link href="#how-it-works" className="hover:text-purple-400 transition-colors">Docs</Link>
-              <Link href="#features" className="hover:text-purple-400 transition-colors">Architecture</Link>
+              <a href="https://github.com/Vino0017/AitHub" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition-colors">GitHub</a>
+              <Link href="#how-it-works" className="hover:text-blue-400 transition-colors">Docs</Link>
+              <Link href="#features" className="hover:text-blue-400 transition-colors">Architecture</Link>
             </div>
           </div>
         </div>
