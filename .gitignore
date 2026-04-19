@@ -14,3 +14,4 @@ scratch/
 # Web frontend build artifacts
 web/node_modules/
 web/.next/
+.gstack/
