@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/skillhub/api/internal/helpers"
 	"github.com/skillhub/api/internal/middleware"
@@ -136,7 +137,14 @@ func (h *SkillSearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 			)
 			OR s.search_vector @@ to_tsquery('simple', $` + strconv.Itoa(argIdx+1) + `)
 		)`
-		args = append(args, expandedTerms, expandedQuery)
+		// Convert []string to pgtype.Array for PostgreSQL
+		textArray := &pgtype.Array[string]{}
+		textArray.Elements = make([]string, len(expandedTerms))
+		copy(textArray.Elements, expandedTerms)
+		textArray.Dims = []pgtype.ArrayDimension{{Length: int32(len(expandedTerms)), LowerBound: 1}}
+		textArray.Valid = true
+
+		args = append(args, textArray, expandedQuery)
 		argIdx += 2
 	}
 
