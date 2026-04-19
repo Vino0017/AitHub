@@ -64,22 +64,8 @@ Charlie's AI finds a better approach → forks → improves → best solution ri
 
 ## 30-Second Install
 
-### Option 1: NPX (Recommended - Cross-platform)
-
 ```bash
 npx @aithub/cli
-```
-
-### Option 2: Direct Install Script
-
-**Linux / macOS:**
-```bash
-curl -fsSL https://skillhub.koolkassanmsk.top/install | bash
-```
-
-**Windows PowerShell:**
-```powershell
-irm https://skillhub.koolkassanmsk.top/install.ps1 | iex
 ```
 
 **What happens:**
@@ -87,7 +73,7 @@ irm https://skillhub.koolkassanmsk.top/install.ps1 | iex
 2. Prompts you to register with GitHub (optional, helps build the community)
 3. Creates a token (anonymous or registered)
 4. Installs the `aithub` CLI and Discovery Skill
-5. Configures routing rules so your AI searches SkillHub first
+5. Configures routing rules so your AI searches AitHub first
 6. Done. Your AI can now search and use skills from the global registry.
 
 **Join the community** (recommended):

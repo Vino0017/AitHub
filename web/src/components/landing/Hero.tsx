@@ -66,20 +66,18 @@ function TerminalBlock() {
         <div className="w-[52px]" />
       </div>
       <div className="p-5 font-mono text-[13px] leading-7 text-gray-300">
-        <div className="text-gray-500 text-[11px] uppercase tracking-widest mb-3">NPX (Recommended)</div>
+        <div className="text-gray-500 text-[11px] uppercase tracking-widest mb-3">Install with NPX</div>
         <div className="flex items-center gap-2 font-medium mb-5">
           <span className="text-blue-400">$</span>
           <span className="text-white">npx</span>
           <span className="text-blue-300">@aithub/cli</span>
         </div>
-        <div className="text-gray-500 text-[11px] uppercase tracking-widest mb-3">Or Direct Install</div>
+        <div className="text-gray-500 text-[11px] uppercase tracking-widest mb-3">Or Register with GitHub</div>
         <div className="flex items-center gap-2 font-medium text-[12px]">
           <span className="text-blue-400">$</span>
-          <span className="text-white">curl</span>
-          <span className="text-gray-500">-fsSL</span>
-          <span className="text-blue-300">skillhub.koolkassanmsk.top/install</span>
-          <span className="text-gray-500">|</span>
-          <span className="text-white">bash</span>
+          <span className="text-white">npx</span>
+          <span className="text-blue-300">@aithub/cli</span>
+          <span className="text-gray-500">--register --github</span>
         </div>
       </div>
     </div>
