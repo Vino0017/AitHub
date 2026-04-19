@@ -342,6 +342,101 @@ AI makes completeness near-free:
 
 ---
 
+## Preloaded Skill Collections
+
+SkillHub comes with curated collections from the best Claude Code skill repositories. Run the preload script to get started:
+
+```bash
+./scripts/preload_popular_skills.sh
+```
+
+### Featured Collections
+
+#### 🏆 [gstack](https://github.com/garrytan/gstack) by Garry Tan
+**66K+ ⭐ | 23 specialist skills**
+
+Garry Tan's (Y Combinator CEO) personal Claude Code setup. Transforms your AI into a structured engineering team with roles like CEO, Designer, Eng Manager, Release Manager, Doc Engineer, and QA.
+
+- **Office Hours**: YC-style product review and startup advice
+- **Ship**: Complete deployment workflow with canary checks
+- **QA**: Systematic testing and bug detection
+- **Design Review**: Designer's eye for UI/UX polish
+- **Investigate**: Root cause analysis for debugging
+
+[Learn more →](https://github.com/garrytan/gstack)
+
+#### 📚 [awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills) by travisvn
+**Curated collection | Resources & tools**
+
+A comprehensive, curated list of Claude Skills, resources, and tools for customizing Claude AI workflows. Perfect starting point for discovering high-quality skills.
+
+[Learn more →](https://github.com/travisvn/awesome-claude-skills)
+
+#### 🚀 [claude-code-skills](https://github.com/levnikolaevich/claude-code-skills) by levnikolaevich
+**Production-ready | Full delivery workflow**
+
+Production-ready skills covering the complete delivery workflow: research, discovery, epic planning, task breakdown, implementation, testing, code review, and quality gates.
+
+[Learn more →](https://github.com/levnikolaevich/claude-code-skills)
+
+#### 💻 [claude-skills](https://github.com/Jeffallan/claude-skills) by Jeffallan
+**65 specialized skills | Full-stack focus**
+
+65 specialized skills for full-stack developers. Transforms Claude Code into your expert pair programmer with deep expertise across the entire stack.
+
+[Learn more →](https://github.com/Jeffallan/claude-skills)
+
+#### 🎯 [claude-code-plugins-plus-skills](https://github.com/jeremylongshore/claude-code-plugins-plus-skills) by jeremylongshore
+**1,367 agent skills + 340 plugins**
+
+Massive open-source marketplace with CCPI package manager, interactive tutorials, and production orchestration patterns. The largest collection of Claude Code skills available.
+
+[Learn more →](https://github.com/jeremylongshore/claude-code-plugins-plus-skills)
+
+### Quick Start with Preloaded Skills
+
+```bash
+# 1. Preload popular skill collections
+./scripts/preload_popular_skills.sh
+
+# 2. Browse preloaded skills
+ls -la skills/preloaded/
+
+# 3. Import selected skills to SkillHub
+# (Coming soon: automated import tool)
+```
+
+---
+
+## Acknowledgments
+
+SkillHub stands on the shoulders of giants. We're deeply grateful to the Claude Code community and these amazing contributors:
+
+### 🙏 Special Thanks
+
+- **[Garry Tan](https://github.com/garrytan)** - For open-sourcing [gstack](https://github.com/garrytan/gstack) and showing how AI can be structured into specialist roles. Your vision of AI-first development inspired this project.
+
+- **[travisvn](https://github.com/travisvn)** - For maintaining [awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills), the definitive curated list that helps everyone discover quality skills.
+
+- **[levnikolaevich](https://github.com/levnikolaevich)** - For [claude-code-skills](https://github.com/levnikolaevich/claude-code-skills), production-ready skills that cover the full delivery workflow.
+
+- **[Jeffallan](https://github.com/Jeffallan)** - For [claude-skills](https://github.com/Jeffallan/claude-skills), 65 specialized skills that transform Claude into an expert pair programmer.
+
+- **[jeremylongshore](https://github.com/jeremylongshore)** - For [claude-code-plugins-plus-skills](https://github.com/jeremylongshore/claude-code-plugins-plus-skills), the largest collection with 1,367 skills and innovative orchestration patterns.
+
+- **[Anthropic](https://www.anthropic.com)** - For creating Claude and the Agent Skills standard that makes all of this possible.
+
+- **The entire Claude Code community** - For building, sharing, and improving skills that make AI development better for everyone.
+
+### 🌟 Community Resources
+
+- [Anthropic's Agent Skills Documentation](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+- [Best Claude Skills for Coding (2026)](https://www.toolsforhumans.ai/skills/coding)
+- [Claude Code Skills Ecosystem](https://botmonster.com/posts/awesome-claude-code-ecosystem-agentic-skills/)
+- [Top 50 Claude Skills and GitHub Repos](https://www.blockchain-council.org/claude-ai/top-50-claude-skills-and-github-repos/)
+
+---
+
 ## Contributing
 
 SkillHub is open source. Contributions welcome!

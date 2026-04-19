@@ -15,3 +15,6 @@ scratch/
 web/node_modules/
 web/.next/
 .gstack/
+
+# Preloaded skill collections (downloaded via script)
+skills/preloaded/
