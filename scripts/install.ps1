@@ -10,7 +10,7 @@ param(
     [switch]$google,
     [string]$email,
     [string]$namespace,
-    [string]$api = "https://your-domain.com"
+    [string]$api = "https://skillhub.koolkassanmsk.top"
 )
 
 $ErrorActionPreference = "Stop"
