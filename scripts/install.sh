@@ -114,11 +114,50 @@ fi
 
 # ── Check existing token ──
 if [ -z "${SKILLHUB_TOKEN:-}" ]; then
-  if [ -z "${SKILLHUB_TOKEN:-}" ]; then
-    echo "→ No token found, creating anonymous token..."
-    TOKEN_RESP=$(curl -sS "$SKILLHUB_API/v1/tokens" -X POST)
-    SKILLHUB_TOKEN=$(echo "$TOKEN_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
-    echo "  ✓ Anonymous token created (register later for full features)"
+  echo ""
+  echo "╔══════════════════════════════════════════════════════════╗"
+  echo "║  Registration Options                                    ║"
+  echo "╚══════════════════════════════════════════════════════════╝"
+  echo ""
+  echo "You can:"
+  echo "  1. Continue with anonymous access (search & install only)"
+  echo "  2. Register now for full features (rate, fork, submit)"
+  echo ""
+  echo "To register, press Ctrl+C and run:"
+  echo "  bash <(curl -fsSL $SKILLHUB_API/install) --register --github"
+  echo ""
+  echo -n "Continue with anonymous access? [Y/n] "
+
+  # Read user input with timeout
+  if read -t 10 -r RESPONSE; then
+    case "$RESPONSE" in
+      [Nn]*)
+        echo ""
+        echo "Installation cancelled. To register, run:"
+        echo "  bash <(curl -fsSL $SKILLHUB_API/install) --register --github"
+        exit 0
+        ;;
+    esac
+  fi
+
+  echo ""
+  echo "→ Creating anonymous token..."
+  TOKEN_RESP=$(curl -sS "$SKILLHUB_API/v1/tokens" -X POST \
+    -H "Content-Type: application/json" \
+    -d "{\"device_id\":\"install-$(date +%s)\"}")
+  SKILLHUB_TOKEN=$(echo "$TOKEN_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+
+  if [ -n "$SKILLHUB_TOKEN" ]; then
+    echo "  ✓ Anonymous token created"
+    echo ""
+    echo "  ⚠ Anonymous limitations:"
+    echo "    • Can search and install skills"
+    echo "    • Cannot rate, fork, or submit skills"
+    echo "    • To unlock full features, register with:"
+    echo "      bash <(curl -fsSL $SKILLHUB_API/install) --register --github"
+  else
+    echo "  ✗ Failed to create token"
+    exit 1
   fi
 fi
 
@@ -314,11 +353,29 @@ echo "Token: ${SKILLHUB_TOKEN:0:20}..."
 echo "Frameworks: $INSTALLED_COUNT detected"
 echo "CLI: aithub (installed to $CLI_INSTALL_DIR)"
 echo ""
-echo "Your AI agents can now:"
-echo "  • Search skills automatically before solving complex tasks"
-echo "  • Contribute solutions back to the community"
-echo "  • Use the 'aithub' CLI for manual operations"
-echo ""
+
+# Show different messages for anonymous vs registered users
+if [ -z "${NAMESPACE:-}" ]; then
+  echo "╔══════════════════════════════════════════════════════════╗"
+  echo "║  Anonymous Access (Limited Features)                    ║"
+  echo "╚══════════════════════════════════════════════════════════╝"
+  echo ""
+  echo "You can:"
+  echo "  ✓ Search skills:  aithub search \"<query>\""
+  echo "  ✓ Install skills: aithub install <namespace/name> --deploy"
+  echo ""
+  echo "To unlock full features (rate, fork, submit):"
+  echo "  bash <(curl -fsSL $SKILLHUB_API/install) --register --github"
+  echo ""
+else
+  echo "Your AI agents can now:"
+  echo "  • Search skills automatically before solving complex tasks"
+  echo "  • Rate and fork skills"
+  echo "  • Contribute solutions back to the community"
+  echo "  • Use the 'aithub' CLI for manual operations"
+  echo ""
+fi
+
 echo "╔══════════════════════════════════════╗"
 echo "║  IMPORTANT: Activate environment     ║"
 echo "╚══════════════════════════════════════╝"

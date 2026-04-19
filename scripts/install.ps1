@@ -79,10 +79,44 @@ if ($register) {
 
 # Create anonymous token if none
 if (-not $token) {
+    Write-Host ""
+    Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║  Registration Options                                    ║" -ForegroundColor Cyan
+    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "You can:" -ForegroundColor White
+    Write-Host "  1. Continue with anonymous access (search & install only)" -ForegroundColor White
+    Write-Host "  2. Register now for full features (rate, fork, submit)" -ForegroundColor White
+    Write-Host ""
+    Write-Host "To register, press Ctrl+C and run:" -ForegroundColor Yellow
+    Write-Host "  irm $api/install.ps1 | iex -register -github" -ForegroundColor Yellow
+    Write-Host ""
+
+    $response = Read-Host "Continue with anonymous access? [Y/n]"
+    if ($response -match '^[Nn]') {
+        Write-Host ""
+        Write-Host "Installation cancelled. To register, run:" -ForegroundColor Yellow
+        Write-Host "  irm $api/install.ps1 | iex -register -github" -ForegroundColor Yellow
+        exit 0
+    }
+
+    Write-Host ""
     Write-Host "→ Creating anonymous token..." -ForegroundColor Gray
-    $tokenResp = Invoke-RestMethod -Uri "$api/v1/tokens" -Method POST
+    $tokenResp = Invoke-RestMethod -Uri "$api/v1/tokens" -Method POST -Body (@{device_id="install-$(Get-Date -Format 'yyyyMMddHHmmss')"} | ConvertTo-Json) -ContentType "application/json"
     $token = $tokenResp.token
-    Write-Host "  ✓ Anonymous token created" -ForegroundColor Green
+
+    if ($token) {
+        Write-Host "  ✓ Anonymous token created" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "  ⚠ Anonymous limitations:" -ForegroundColor Yellow
+        Write-Host "    • Can search and install skills" -ForegroundColor White
+        Write-Host "    • Cannot rate, fork, or submit skills" -ForegroundColor White
+        Write-Host "    • To unlock full features, register with:" -ForegroundColor White
+        Write-Host "      irm $api/install.ps1 | iex -register -github" -ForegroundColor Yellow
+    } else {
+        Write-Host "  ✗ Failed to create token" -ForegroundColor Red
+        exit 1
+    }
 }
 
 # Install aithub CLI
