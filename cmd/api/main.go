@@ -93,6 +93,7 @@ func main() {
 	admin := handler.NewAdminHandler(pool)
 	bootstrap := handler.NewBootstrapHandler()
 	downloads := handler.NewDownloadHandler()
+	docs := handler.NewDocsHandler()
 
 	r := chi.NewRouter()
 	r.Use(chimiddleware.Logger)
@@ -112,6 +113,7 @@ func main() {
 	r.Get("/install", downloads.ServeInstallScript)
 	r.Get("/install.ps1", downloads.ServeInstallScript)
 	r.Get("/uninstall", web.UninstallScript)
+	r.Get("/docs", docs.ServeAPIDocs)
 
 	// ── Downloads (CLI binaries) ──
 	r.Get("/downloads/{binary}", downloads.ServeDownload)

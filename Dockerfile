@@ -14,6 +14,7 @@ COPY --from=builder /app/skillhub .
 COPY migrations/ migrations/
 COPY scripts/ scripts/
 COPY skills/ skills/
+COPY dist/ dist/
 
 EXPOSE 8080
 ENTRYPOINT ["./skillhub"]

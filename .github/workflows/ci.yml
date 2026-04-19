@@ -1,0 +1,138 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: skillhub_test
+          POSTGRES_USER: skillhub
+          POSTGRES_PASSWORD: skillhub_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: postgres://skillhub:skillhub_dev@localhost:5432/skillhub_test?sslmode=disable
+        run: |
+          go install github.com/pressly/goose/v3/cmd/goose@latest
+          goose -dir migrations postgres "$DATABASE_URL" up
+
+      - name: Run tests with coverage
+        env:
+          DATABASE_URL: postgres://skillhub:skillhub_dev@localhost:5432/skillhub_test?sslmode=disable
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Check coverage threshold
+        run: |
+          # Calculate total coverage
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage: ${COVERAGE}%"
+
+          # Fail if coverage is below 80%
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "❌ Coverage ${COVERAGE}% is below 80% threshold"
+            exit 1
+          fi
+          echo "✅ Coverage ${COVERAGE}% meets 80% threshold"
+
+      - name: Check per-package coverage
+        run: |
+          echo "=== Per-Package Coverage ==="
+          go tool cover -func=coverage.out | grep -v "total:" | awk '{print $1, $3}' | while read file coverage; do
+            pkg=$(dirname "$file")
+            cov_num=$(echo "$coverage" | sed 's/%//')
+
+            # Skip test files and generated code
+            if [[ "$file" == *"_test.go" ]] || [[ "$file" == *".pb.go" ]]; then
+              continue
+            fi
+
+            # Warn if package coverage is below 80%
+            if (( $(echo "$cov_num < 80" | bc -l) )); then
+              echo "⚠️  $pkg: ${coverage} (below 80%)"
+            fi
+          done
+
+      - name: Run eval tests
+        env:
+          DATABASE_URL: postgres://skillhub:skillhub_dev@localhost:5432/skillhub_test?sslmode=disable
+        run: |
+          go test -v -tags=eval ./internal/eval
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+          args: --timeout=5m
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Run gosec
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec -fmt=json -out=gosec-report.json ./...
+
+      - name: Upload gosec report
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gosec-report.json

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/skillhub/api/internal/security"
 )
 
 // ScanIssue represents a finding from the regex scanner.
@@ -33,6 +35,8 @@ var secretPatterns = []struct {
 	{"Slack Token", regexp.MustCompile(`xox[baprs]-[0-9]{10,}-[a-zA-Z0-9-]+`)},
 	{"Private Key", regexp.MustCompile(`-----BEGIN (RSA|EC|DSA|OPENSSH|PGP) PRIVATE KEY-----`)},
 	{"Generic Secret", regexp.MustCompile(`(?i)(password|passwd|secret|api_key|apikey|access_token)\s*[:=]\s*['"][^'"]{8,}['"]`)},
+	{"JWT Secret", regexp.MustCompile(`(?i)jwt[_-]?secret\s*[:=]\s*['"][^'"]{8,}['"]`)},
+	{"API Key in URL", regexp.MustCompile(`(?i)(api[_-]?key|apikey|token)=[a-zA-Z0-9_-]{20,}`)},
 	{"Bearer Token", regexp.MustCompile(`(?i)bearer\s+[a-zA-Z0-9_\-.]{20,}`)},
 	{"Connection String", regexp.MustCompile(`(?i)(postgres|mysql|mongodb)://[^\s'"]+:[^\s'"]+@`)},
 }
@@ -45,8 +49,9 @@ func RegexScan(content string) []ScanIssue {
 
 	for lineNum, line := range lines {
 		// Skip YAML frontmatter field definitions (these are templates, not real secrets)
+		// BUT: only skip if they are simple field declarations without actual secret values
 		trimmed := strings.TrimSpace(line)
-		if strings.HasPrefix(trimmed, "env_var:") || strings.HasPrefix(trimmed, "obtain_url:") {
+		if isYAMLFieldDeclaration(trimmed) {
 			continue
 		}
 
@@ -68,6 +73,51 @@ func RegexScan(content string) []ScanIssue {
 	}
 
 	return issues
+}
+
+// isYAMLFieldDeclaration 检查是否是 YAML 字段声明（而不是实际的秘密值）
+func isYAMLFieldDeclaration(line string) bool {
+	// 只有当行是简单的字段名声明时才跳过
+	// 例如: "env_var: OPENAI_API_KEY" (字段名)
+	// 但不跳过: "env_var: sk-proj-abc123" (实际秘密)
+
+	if !strings.HasPrefix(line, "env_var:") && !strings.HasPrefix(line, "obtain_url:") {
+		return false
+	}
+
+	// 提取冒号后的值
+	parts := strings.SplitN(line, ":", 2)
+	if len(parts) != 2 {
+		return false
+	}
+
+	value := strings.TrimSpace(parts[1])
+
+	// 先检查是否包含秘密模式
+	for _, p := range secretPatterns {
+		if p.Pattern.MatchString(value) {
+			return false // 包含秘密，不跳过
+		}
+	}
+
+	// 如果值看起来像环境变量名（全大写，下划线，但不是 AWS key 格式），则是字段声明
+	// 例如: "OPENAI_API_KEY", "DATABASE_URL"
+	// 但不包括: "AKIAIOSFODNN7EXAMPLE" (AWS key)
+	if regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`).MatchString(value) {
+		// 额外检查：不是 AWS key 格式（AKIA 开头）
+		if !strings.HasPrefix(value, "AKIA") {
+			return true
+		}
+	}
+
+	// 如果值是 URL 但不包含秘密模式，则是字段声明
+	// 例如: "https://platform.openai.com/api-keys"
+	if strings.HasPrefix(value, "http") {
+		return true // 已经在上面检查过秘密模式了
+	}
+
+	// 其他情况不跳过
+	return false
 }
 
 // MaliciousPatterns checks for dangerous commands.
@@ -98,6 +148,27 @@ func SecurityScan(content string) []ScanIssue {
 				})
 			}
 		}
+	}
+
+	return issues
+}
+
+// PromptInjectionScan 检测 prompt 注入攻击
+func PromptInjectionScan(content string) []ScanIssue {
+	detector := security.NewPromptInjectionDetector()
+	result := detector.Detect(content)
+
+	if result.IsSafe {
+		return []ScanIssue{}
+	}
+
+	issues := []ScanIssue{}
+	for _, finding := range result.Findings {
+		issues = append(issues, ScanIssue{
+			Type:   "prompt_injection",
+			Line:   finding.Line,
+			Detail: fmt.Sprintf("%s: %s (context: %s)", finding.Pattern, finding.Description, finding.Context),
+		})
 	}
 
 	return issues
