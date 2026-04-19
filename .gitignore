@@ -19,3 +19,30 @@ web/
 
 # Preloaded skill collections (downloaded via script)
 skills/preloaded/
+
+# Private documentation and configuration
+CLAUDE.md
+AI_FIRST_*.md
+BLUEPRINT.md
+CEO_REVIEW.md
+CLI_IMPLEMENTATION.md
+CODEBASE.md
+CURRENT_STATUS.md
+DEPLOYMENT*.md
+DEPLOY_*.md
+DESIGN_REVIEW.md
+DEVELOPMENT_PLAN.md
+ENG_REVIEW.md
+LAUNCH_SUMMARY.md
+PROJECT_SUMMARY.md
+SECURITY_FIX_*.md
+SKILLMD_SPEC.md
+TECH_STACK.md
+TESTING.md
+XSHELL_DEPLOY.md
+*_REPORT*.md
+scripts/*routing.md
+skills/skillhub/
+
+# Deployment and test scripts (contain server credentials)
+*.py
