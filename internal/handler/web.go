@@ -571,18 +571,18 @@ const landingHTML = `<!DOCTYPE html>
         grid.innerHTML = data.skills.map(skill => {
           const rating = skill.avg_rating?.toFixed(1) || '0.0';
           const tags = skill.tags?.slice(0, 3) || [];
-          return \`
+          return ` + "`" + `
             <div class="skill-card">
               <div class="skill-header">
-                <div class="skill-name">\${skill.namespace}/\${skill.name}</div>
-                <div class="skill-rating">⭐ \${rating}</div>
+                <div class="skill-name">${skill.namespace}/${skill.name}</div>
+                <div class="skill-rating">⭐ ${rating}</div>
               </div>
-              <div class="skill-desc">\${skill.description || 'No description'}</div>
+              <div class="skill-desc">${skill.description || 'No description'}</div>
               <div class="skill-tags">
-                \${tags.map(tag => \`<span class="tag">\${tag}</span>\`).join('')}
+                ${tags.map(tag => ` + "`" + `<span class="tag">${tag}</span>` + "`" + `).join('')}
               </div>
             </div>
-          \`;
+          ` + "`" + `;
         }).join('');
       } catch (e) {
         console.error('Failed to load skills:', e);

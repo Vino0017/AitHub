@@ -104,8 +104,9 @@ func (h *SkillDetailHandler) Content(w http.ResponseWriter, r *http.Request) {
 	go h.pool.Exec(context.Background(), `UPDATE skills SET install_count = install_count + 1 WHERE id = $1`, skill["id"])
 
 	// Log usage for statistics
-	tokenID := middleware.GetTokenID(r.Context())
-	go h.usageTracker.LogUsage(context.Background(), skill["id"].(uuid.UUID), tokenID, "install")
+	if tokenID, ok := middleware.GetTokenID(r.Context()).(uuid.UUID); ok {
+		go h.usageTracker.LogUsage(context.Background(), skill["id"].(uuid.UUID), tokenID, "install")
+	}
 
 	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"namespace": nsName, "name": skillName, "version": version, "content": content,

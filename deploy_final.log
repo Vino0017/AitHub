@@ -1,0 +1,148 @@
+=== Complete Deploy to 192.227.235.131 ===
+
+[1/7] Creating directories...
+  $ mkdir -p /opt
+  $ mkdir -p /opt/skillhub
+  $ mkdir -p /opt/skillhub/cmd
+  $ mkdir -p /opt/skillhub/cmd/api
+  $ mkdir -p /opt/skillhub/internal
+  $ mkdir -p /opt/skillhub/internal/credibility
+  $ mkdir -p /opt/skillhub/internal/crypto
+  $ mkdir -p /opt/skillhub/internal/db
+  $ mkdir -p /opt/skillhub/internal/email
+  $ mkdir -p /opt/skillhub/internal/handler
+  $ mkdir -p /opt/skillhub/internal/helpers
+  $ mkdir -p /opt/skillhub/internal/llm
+  $ mkdir -p /opt/skillhub/internal/middleware
+  $ mkdir -p /opt/skillhub/internal/models
+  $ mkdir -p /opt/skillhub/internal/privacy
+  $ mkdir -p /opt/skillhub/internal/review
+  $ mkdir -p /opt/skillhub/internal/skillformat
+  $ mkdir -p /opt/skillhub/internal/usage
+  $ mkdir -p /opt/skillhub/internal/validation
+  $ mkdir -p /opt/skillhub/migrations
+  $ mkdir -p /opt/skillhub/scripts
+  $ mkdir -p /opt/skillhub/skills
+  $ mkdir -p /opt/skillhub/skills/skillhub
+
+[2/7] Uploading 49 files...
+    + go.mod
+    + go.sum
+    + Dockerfile
+    + docker-compose.yml
+    + .env.example
+    + .dockerignore
+    + cmd/api/main.go
+    + internal/handler/admin.go
+    + internal/handler/auth.go
+    + internal/handler/bootstrap.go
+    + internal/handler/fork.go
+    + internal/handler/namespace.go
+    + internal/handler/rating.go
+    + internal/handler/revision.go
+    + internal/handler/skill_detail.go
+    + internal/handler/skill_search.go
+    + internal/handler/skill_submit.go
+    + internal/handler/skill_yank.go
+    + internal/handler/token.go
+    + internal/handler/web.go
+    + internal/privacy/cleaner.go
+    + internal/usage/tracker.go
+    + internal/validation/environment.go
+    + internal/credibility/analyzer.go
+    + internal/crypto/crypto.go
+    + internal/db/db.go
+    + internal/email/sender.go
+    + internal/helpers/http.go
+    + internal/llm/llm.go
+    + internal/middleware/auth.go
+    + internal/models/models.go
+    + internal/review/regex_scanner.go
+    + internal/review/reviewer.go
+    + internal/review/worker.go
+    + internal/skillformat/validate.go
+    + internal/skillformat/semver.go
+    + migrations/001_create_namespaces.sql
+    + migrations/002_create_org_members.sql
+    + migrations/003_create_tokens.sql
+    + migrations/004_create_skills.sql
+    + migrations/005_create_revisions.sql
+    + migrations/006_create_ratings.sql
+    + migrations/007_create_auth_tables.sql
+    + migrations/008_add_version_features.sql
+    + migrations/009_add_rating_credibility.sql
+    + migrations/010_add_usage_stats.sql
+    + scripts/seed.sql
+    + scripts/install.sh
+    + skills/skillhub/SKILL.md
+    Uploaded: 49/49
+
+[3/7] Setting up .env...
+    New ADMIN_TOKEN: 9b0a67bb355afcf7ea150897c2a8604a0ff5f7546ca827152914fc122d4ff5c9
+  $ cat > /opt/skillhub/.env << 'EOF'
+DATABASE_URL=postgresql://skillhub:skillhub_password@postgres:5432
+
+[4/7] Stopping old containers...
+  $ cd /opt/skillhub && docker compose down
+
+[5/7] Building new image...
+  $ cd /opt/skillhub && docker compose build --no-cache api
+    #1 [internal] load local bake definitions
+    #1 reading from stdin 492B done
+    #1 DONE 0.0s
+    
+    #2 [internal] load build definition from Dockerfile
+    #2 transferring dockerfile: 466B 0.0s done
+    #2 DONE 0.0s
+    
+    #3 [internal] load metadata for docker.io/library/golang:1.25-alpine
+    #3 DONE 0.2s
+    
+    #4 [internal] load metadata for docker.io/library/alpine:3.21
+    #4 DONE 0.3s
+    
+    #5 [internal] load .dockerignore
+    [ERR] Image skillhub-api Building 
+    [ERR] Dockerfile:7
+    [ERR] 
+    [ERR] --------------------
+    [ERR] 
+    [ERR]    5 |     RUN go mod download
+    [ERR] 
+    [ERR]    6 |     COPY . .
+    [ERR] 
+    [ERR]    7 | >>> RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o skillhub ./cmd/api
+
+    Build failed! Checking details...
+  $ cd /opt/skillhub && ls -la
+    total 324
+    drwxr-xr-x 11  501 staff  4096 Apr 19 04:02 .
+    drwxr-xr-x  7 root root   4096 Apr 15 13:00 ..
+    -rw-r--r--  1 root root   8811 Apr 19 02:48 AI_FIRST_DESIGN.md
+    -rw-r--r--  1 root root  40635 Apr 19 02:48 BLUEPRINT.md
+    -rw-r--r--  1 root root  12603 Apr 19 02:48 CEO_REVIEW.md
+    -rw-r--r--  1  501 staff  2888 Apr 19 02:48 CLAUDE.md
+    drwxr-xr-x  3  501 staff  4096 Apr 14 16:18 cmd
+    -rw-r--r--  1 root root   5678 Apr 19 02:48 CODEBASE.md
+    -rw-r--r--  1 root root   3489 Apr 19 02:48 CURRENT_STATUS.md
+    -rw-r--r--  1 root root   6503 Apr 19 02:48 DEPLOY_MANUAL.md
+    -rw-r--r--  1 root root   1959 Apr 19 02:48 DEPLOYMENT.md
+    -rw-r--r--  1 root root   5552 Apr 19 02:48 DEPLOYMENT_STATUS.md
+    -rw-r--r--  1 root root   2254 Apr 19 02:48 deploy.sh
+    -rw-r--r--  1 root root   5175 Apr 19 02:48 deploy_with_password.sh
+  $ cd /opt/skillhub && cat Dockerfile
+    # Build stage
+    FROM golang:1.25-alpine AS builder
+    WORKDIR /app
+    COPY go.mod go.sum ./
+    RUN go mod download
+    COPY . .
+    RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o skillhub ./cmd/api
+    
+    # Run stage
+    FROM alpine:3.21
+    RUN apk add --no-cache ca-certificates tzdata
+    WORKDIR /app
+    COPY --from=builder /app/skillhub .
+    COPY migrations/ migrations/
+    COPY scripts/ scripts/

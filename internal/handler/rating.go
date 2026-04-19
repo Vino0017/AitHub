@@ -71,7 +71,11 @@ func (h *RatingHandler) Submit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenID := middleware.GetTokenID(r.Context())
+	tokenID, ok := middleware.GetTokenID(r.Context()).(uuid.UUID)
+	if !ok {
+		helpers.WriteError(w, http.StatusUnauthorized, "invalid_token", "Invalid token ID", "")
+		return
+	}
 
 	// Calculate confidence score
 	confidence := h.analyzer.CalculateConfidence(r.Context(), credibility.RatingInput{
