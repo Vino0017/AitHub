@@ -113,7 +113,7 @@ func (h *SkillSearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 		       s.tags, s.framework, s.visibility, s.forked_from,
 		       s.install_count, s.avg_rating, s.rating_count, s.outcome_success_rate,
 		       s.latest_version, s.fork_count, s.status, s.created_at, s.updated_at,
-		       (SELECT array_agg(r.triggers) FROM revisions r
+		       (SELECT r.triggers FROM revisions r
 		        WHERE r.skill_id = s.id AND r.review_status = 'approved'
 		        ORDER BY r.created_at DESC LIMIT 1) AS triggers,
 		       CASE WHEN s.created_at > NOW() - INTERVAL '7 days' THEN true ELSE false END AS is_new
