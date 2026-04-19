@@ -159,8 +159,9 @@ func searchCmd() *cobra.Command {
 
 func installCmd() *cobra.Command {
 	var (
-		output  string
-		jsonOut bool
+		output     string
+		jsonOut    bool
+		autoDeploy bool
 	)
 
 	cmd := &cobra.Command{
@@ -203,19 +204,60 @@ func installCmd() *cobra.Command {
 			}
 
 			var result struct {
-				Content string `json:"content"`
-				Version string `json:"version"`
+				Content   string `json:"content"`
+				Version   string `json:"version"`
+				Framework string `json:"framework"`
 			}
 
 			if err := json.Unmarshal(body, &result); err != nil {
 				return err
 			}
 
+			// Auto-deploy logic
+			if autoDeploy {
+				deployed := false
+				homeDir, _ := os.UserHomeDir()
+
+				// Framework directory mapping
+				frameworkDirs := map[string]string{
+					"gstack":      homeDir + "/.gstack/skills",
+					"openclaw":    homeDir + "/.openclaw/skills",
+					"hermes":      homeDir + "/.hermes/skills",
+					"claude-code": homeDir + "/.claude/skills",
+					"cursor":      homeDir + "/.cursor/skills",
+					"windsurf":    homeDir + "/.windsurf/skills",
+				}
+
+				// Try to detect installed frameworks
+				for fw, dir := range frameworkDirs {
+					parentDir := strings.TrimSuffix(dir, "/skills")
+					if _, err := os.Stat(parentDir); err == nil {
+						// Framework detected, deploy here
+						skillDir := fmt.Sprintf("%s/%s", dir, parts[0])
+						if err := os.MkdirAll(skillDir, 0755); err != nil {
+							continue
+						}
+						skillFile := fmt.Sprintf("%s/SKILL.md", skillDir)
+						if err := os.WriteFile(skillFile, []byte(result.Content), 0644); err != nil {
+							continue
+						}
+						fmt.Printf("✓ Deployed to %s: %s (version %s)\n", fw, skillFile, result.Version)
+						deployed = true
+					}
+				}
+
+				if !deployed {
+					return fmt.Errorf("no AI framework detected. Install one of: Claude Code, Cursor, Windsurf, GStack, OpenClaw, Hermes")
+				}
+				return nil
+			}
+
+			// Manual output
 			if output != "" {
 				if err := os.WriteFile(output, []byte(result.Content), 0644); err != nil {
 					return fmt.Errorf("failed to write file: %w", err)
 				}
-				fmt.Printf("✓ Skill installed to %s (version %s)\n", output, result.Version)
+				fmt.Printf("✓ Skill saved to %s (version %s)\n", output, result.Version)
 			} else {
 				fmt.Println(result.Content)
 			}
@@ -226,6 +268,7 @@ func installCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&output, "output", "o", "", "Output file path")
 	cmd.Flags().BoolVar(&jsonOut, "json", false, "Output raw JSON")
+	cmd.Flags().BoolVar(&autoDeploy, "deploy", false, "Auto-deploy to detected AI frameworks")
 
 	return cmd
 }
@@ -300,6 +343,13 @@ func rateCmd() *cobra.Command {
 				return err
 			}
 
+			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+				fmt.Fprintf(os.Stderr, "Error: Authentication required\n\n")
+				fmt.Fprintf(os.Stderr, "To rate skills, you need a registered account.\n")
+				fmt.Fprintf(os.Stderr, "Run: bash <(curl -fsSL %s/install) --register --github\n", apiURL)
+				return fmt.Errorf("authentication required")
+			}
+
 			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 				return fmt.Errorf("API error (%d): %s", resp.StatusCode, string(body))
 			}
@@ -362,6 +412,13 @@ func submitCmd() *cobra.Command {
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return err
+			}
+
+			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+				fmt.Fprintf(os.Stderr, "Error: Authentication required\n\n")
+				fmt.Fprintf(os.Stderr, "To submit skills, you need a registered account.\n")
+				fmt.Fprintf(os.Stderr, "Run: bash <(curl -fsSL %s/install) --register --github\n", apiURL)
+				return fmt.Errorf("authentication required")
 			}
 
 			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusAccepted {
@@ -488,6 +545,13 @@ func forkCmd() *cobra.Command {
 				return err
 			}
 
+			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+				fmt.Fprintf(os.Stderr, "Error: Authentication required\n\n")
+				fmt.Fprintf(os.Stderr, "To fork skills, you need a registered account.\n")
+				fmt.Fprintf(os.Stderr, "Run: bash <(curl -fsSL %s/install) --register --github\n", apiURL)
+				return fmt.Errorf("authentication required")
+			}
+
 			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 				return fmt.Errorf("API error (%d): %s", resp.StatusCode, string(body))
 			}
@@ -558,7 +622,14 @@ func detailsCmd() *cobra.Command {
 
 			fmt.Printf("Skill: %s\n", result["full_name"])
 			fmt.Printf("Description: %s\n", result["description"])
-			fmt.Printf("Version: %s\n", result["version"])
+
+			// Handle version field safely
+			if version, ok := result["version"].(string); ok && version != "" {
+				fmt.Printf("Version: %s\n", version)
+			} else {
+				fmt.Printf("Version: (not specified)\n")
+			}
+
 			fmt.Printf("Framework: %s\n", result["framework"])
 			fmt.Printf("Rating: %.1f (%d ratings)\n", result["avg_rating"], int(result["rating_count"].(float64)))
 			fmt.Printf("Installs: %d\n", int(result["install_count"].(float64)))

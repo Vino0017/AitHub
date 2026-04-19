@@ -6,6 +6,27 @@
 
 set -euo pipefail
 
+# ── Check bash version ──
+BASH_VERSION_MAJOR="${BASH_VERSINFO[0]}"
+if [ "$BASH_VERSION_MAJOR" -lt 4 ]; then
+  echo "⚠ Warning: bash 3.x detected (macOS default)"
+  echo "  This script requires bash 4.0+ for full compatibility"
+  echo ""
+
+  # Try to find bash 4.0+
+  if [ -x "/opt/homebrew/bin/bash" ]; then
+    echo "→ Found bash 4.0+ at /opt/homebrew/bin/bash, switching..."
+    exec /opt/homebrew/bin/bash "$0" "$@"
+  elif [ -x "/usr/local/bin/bash" ]; then
+    echo "→ Found bash 4.0+ at /usr/local/bin/bash, switching..."
+    exec /usr/local/bin/bash "$0" "$@"
+  else
+    echo "→ Install bash 4.0+ with: brew install bash"
+    echo "  Continuing with bash 3.x (may have limited functionality)..."
+    echo ""
+  fi
+fi
+
 SKILLHUB_API="${SKILLHUB_API:-https://your-domain.com}"
 REGISTER=false
 AUTH_METHOD=""
@@ -257,6 +278,12 @@ echo "  • Search skills automatically before solving complex tasks"
 echo "  • Contribute solutions back to the community"
 echo "  • Use the 'aithub' CLI for manual operations"
 echo ""
-echo "Run 'source $SHELL_RC' or restart your terminal to apply."
+echo "╔══════════════════════════════════════╗"
+echo "║  IMPORTANT: Activate environment     ║"
+echo "╚══════════════════════════════════════╝"
+echo ""
+echo "Run one of these commands to activate:"
+echo "  source $SHELL_RC"
+echo "  OR restart your terminal"
 echo ""
 echo "Try: aithub search \"kubernetes deploy\""
