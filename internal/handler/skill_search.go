@@ -132,7 +132,7 @@ func (h *SkillSearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 				SELECT 1 FROM revisions r
 				WHERE r.skill_id = s.id
 				AND r.review_status = 'approved'
-				AND r.triggers && ARRAY[$` + strconv.Itoa(argIdx) + `]::text[]
+				AND r.triggers && $` + strconv.Itoa(argIdx) + `::text[]
 			)
 			OR s.search_vector @@ to_tsquery('simple', $` + strconv.Itoa(argIdx+1) + `)
 		)`
