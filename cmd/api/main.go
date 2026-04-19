@@ -92,6 +92,7 @@ func main() {
 	namespaces := handler.NewNamespaceHandler(pool)
 	admin := handler.NewAdminHandler(pool)
 	bootstrap := handler.NewBootstrapHandler()
+	downloads := handler.NewDownloadHandler()
 
 	r := chi.NewRouter()
 	r.Use(chimiddleware.Logger)
@@ -108,9 +109,12 @@ func main() {
 	// ── Web (landing page + install scripts) ──
 	web := handler.NewWebHandler()
 	r.Get("/", web.LandingPage)
-	r.Get("/install", web.InstallScript)
-	r.Get("/install.ps1", web.InstallScript)
+	r.Get("/install", downloads.ServeInstallScript)
+	r.Get("/install.ps1", downloads.ServeInstallScript)
 	r.Get("/uninstall", web.UninstallScript)
+
+	// ── Downloads (CLI binaries) ──
+	r.Get("/downloads/{binary}", downloads.ServeDownload)
 
 	// ── Public: Token creation ──
 	r.Post("/v1/tokens", tokens.Create)
