@@ -3,13 +3,13 @@
 @theme {
   --color-background: #050510;
   --color-foreground: #ededed;
-  
-  --color-primary: #7c3aed;
-  --color-primary-glow: rgba(124, 58, 237, 0.4);
-  
-  --color-accent: #ec4899;
-  --color-accent-glow: rgba(236, 72, 153, 0.4);
-  
+
+  --color-primary: #3b82f6;
+  --color-primary-glow: rgba(59, 130, 246, 0.4);
+
+  --color-accent: #06b6d4;
+  --color-accent-glow: rgba(6, 182, 212, 0.4);
+
   --color-card: rgba(15, 15, 25, 0.7);
   --color-card-border: rgba(255, 255, 255, 0.08);
 
