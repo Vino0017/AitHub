@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # SkillHub Installer - Enhanced with CLI and auto-routing
 # Usage:
-#   bash <(curl -fsSL https://skillhub.koolkassanmsk.top/install)
-#   bash <(curl -fsSL https://skillhub.koolkassanmsk.top/install) --register --github
+#   bash <(curl -fsSL https://your-domain.com/install)
+#   bash <(curl -fsSL https://your-domain.com/install) --register --github
 
 set -euo pipefail
 
-SKILLHUB_API="${SKILLHUB_API:-https://skillhub.koolkassanmsk.top}"
+SKILLHUB_API="${SKILLHUB_API:-https://your-domain.com}"
 REGISTER=false
 AUTH_METHOD=""
 REG_EMAIL=""

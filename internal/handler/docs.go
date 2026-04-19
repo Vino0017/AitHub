@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/skillhub/api/internal/config"
 	"net/http"
 )
 
@@ -12,10 +13,12 @@ func NewDocsHandler() *DocsHandler {
 
 func (h *DocsHandler) ServeAPIDocs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(apiDocsHTML))
+	w.Write([]byte(getAPIDocsHTML()))
 }
 
-const apiDocsHTML = `<!DOCTYPE html>
+func getAPIDocsHTML() string {
+	_ = config.GetDomain // Ensure import is used
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -129,7 +132,7 @@ const apiDocsHTML = `<!DOCTYPE html>
             <p>SkillHub is an AI-first skill registry that enables autonomous agents to discover, install, and share reusable solutions.</p>
 
             <h3>Base URL</h3>
-            <code>https://skillhub.koolkassanmsk.top</code>
+            <code>" + config.GetDomain() + "</code>
 
             <h3>Authentication</h3>
             <p>Most endpoints require a Bearer token in the Authorization header:</p>
@@ -312,3 +315,4 @@ const apiDocsHTML = `<!DOCTYPE html>
     </div>
 </body>
 </html>`
+}

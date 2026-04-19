@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/skillhub/api/internal/config"
 	"context"
 	"net/http"
 	"strings"
@@ -82,7 +83,7 @@ func RequireNamespace(next http.Handler) http.Handler {
 		if isAnon {
 			helpers.WriteError(w, http.StatusForbidden, "namespace_required",
 				"A registered namespace is required for this action",
-				"Ask your human to run: bash <(curl -fsSL https://skillhub.koolkassanmsk.top/install) --register --github")
+				"Ask your human to run: bash <(curl -fsSL " + config.GetDomain() + "/install) --register --github")
 			return
 		}
 		next.ServeHTTP(w, r)

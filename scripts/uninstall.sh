@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SkillHub Uninstaller
-# Usage: bash <(curl -fsSL https://skillhub.koolkassanmsk.top/uninstall)
+# Usage: bash <(curl -fsSL https://your-domain.com/uninstall)
 
 set -euo pipefail
 

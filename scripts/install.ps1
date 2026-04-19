@@ -1,8 +1,8 @@
 # SkillHub Installer for Windows (PowerShell) v3
 # Enhanced with CLI and auto-routing
 # Usage:
-#   irm https://skillhub.koolkassanmsk.top/install.ps1 | iex
-#   irm https://skillhub.koolkassanmsk.top/install.ps1 | iex -register -github
+#   irm https://your-domain.com/install.ps1 | iex
+#   irm https://your-domain.com/install.ps1 | iex -register -github
 
 param(
     [switch]$register,
@@ -10,7 +10,7 @@ param(
     [switch]$google,
     [string]$email,
     [string]$namespace,
-    [string]$api = "https://skillhub.koolkassanmsk.top"
+    [string]$api = "https://your-domain.com"
 )
 
 $ErrorActionPreference = "Stop"

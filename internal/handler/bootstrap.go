@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/skillhub/api/internal/config"
 	"github.com/skillhub/api/internal/helpers"
 )
 
@@ -39,7 +40,7 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"- User mentions \"skill\", \"capability\", or \"can you do X\"\n\n" +
 		"## Search for skills\n\n" +
 		"```bash\n" +
-		"curl -s \"https://skillhub.koolkassanmsk.top/v1/skills?q=<query>&sort=rating&limit=5&explore=<true|false>\" \\\n" +
+		"curl -s \"" + config.GetDomain() + "/v1/skills?q=<query>&sort=rating&limit=5&explore=<true|false>\" \\\n" +
 		"  -H \"Authorization: Bearer $SKILLHUB_TOKEN\"\n" +
 		"```\n\n" +
 		"Parameters:\n" +
@@ -50,15 +51,15 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"## Install a skill\n\n" +
 		"```bash\n" +
 		"# Get skill content\n" +
-		"curl -s \"https://skillhub.koolkassanmsk.top/v1/skills/<namespace>/<name>/content\" \\\n" +
+		"curl -s \"" + config.GetDomain() + "/v1/skills/<namespace>/<name>/content\" \\\n" +
 		"  -H \"Authorization: Bearer $SKILLHUB_TOKEN\" > ~/.claude/skills/<name>/SKILL.md\n\n" +
 		"# Or get install command\n" +
-		"curl -s \"https://skillhub.koolkassanmsk.top/v1/skills/<namespace>/<name>/install\" \\\n" +
+		"curl -s \"" + config.GetDomain() + "/v1/skills/<namespace>/<name>/install\" \\\n" +
 		"  -H \"Authorization: Bearer $SKILLHUB_TOKEN\"\n" +
 		"```\n\n" +
 		"## Rate a skill after use\n\n" +
 		"```bash\n" +
-		"curl -X POST \"https://skillhub.koolkassanmsk.top/v1/skills/<namespace>/<name>/ratings\" \\\n" +
+		"curl -X POST \"" + config.GetDomain() + "/v1/skills/<namespace>/<name>/ratings\" \\\n" +
 		"  -H \"Authorization: Bearer $SKILLHUB_TOKEN\" \\\n" +
 		"  -H \"Content-Type: application/json\" \\\n" +
 		"  -d '{\n" +
@@ -75,7 +76,7 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"2. Clean all privacy data (API keys, names, paths, emails)\n" +
 		"3. Submit:\n\n" +
 		"```bash\n" +
-		"curl -X POST \"https://skillhub.koolkassanmsk.top/v1/skills\" \\\n" +
+		"curl -X POST \"" + config.GetDomain() + "/v1/skills\" \\\n" +
 		"  -H \"Authorization: Bearer $SKILLHUB_TOKEN\" \\\n" +
 		"  -H \"Content-Type: application/json\" \\\n" +
 		"  -d '{\n" +
@@ -95,7 +96,7 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"If SKILLHUB_TOKEN not set:\n" +
 		"```bash\n" +
 		"# Create anonymous token\n" +
-		"TOKEN=$(curl -s -X POST \"https://skillhub.koolkassanmsk.top/v1/tokens\" | jq -r '.token')\n" +
+		"TOKEN=$(curl -s -X POST \"" + config.GetDomain() + "/v1/tokens\" | jq -r '.token')\n" +
 		"echo \"export SKILLHUB_TOKEN=$TOKEN\" >> ~/.bashrc\n" +
 		"```\n\n" +
 		"## Auto-contribute mode\n\n" +
@@ -112,9 +113,9 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"content": discoveryContent,
 		"version": "2.0.0",
 		"install_instructions": map[string]string{
-			"claude_code": "mkdir -p ~/.claude/skills/skillhub && curl -s https://skillhub.koolkassanmsk.top/v1/bootstrap/discovery > ~/.claude/skills/skillhub/SKILL.md",
-			"cursor":      "mkdir -p ~/.cursor/skills/skillhub && curl -s https://skillhub.koolkassanmsk.top/v1/bootstrap/discovery > ~/.cursor/skills/skillhub/SKILL.md",
-			"windsurf":    "mkdir -p ~/.windsurf/skills/skillhub && curl -s https://skillhub.koolkassanmsk.top/v1/bootstrap/discovery > ~/.windsurf/skills/skillhub/SKILL.md",
+			"claude_code": "mkdir -p ~/.claude/skills/skillhub && curl -s " + config.GetDomain() + "/v1/bootstrap/discovery > ~/.claude/skills/skillhub/SKILL.md",
+			"cursor":      "mkdir -p ~/.cursor/skills/skillhub && curl -s " + config.GetDomain() + "/v1/bootstrap/discovery > ~/.cursor/skills/skillhub/SKILL.md",
+			"windsurf":    "mkdir -p ~/.windsurf/skills/skillhub && curl -s " + config.GetDomain() + "/v1/bootstrap/discovery > ~/.windsurf/skills/skillhub/SKILL.md",
 		},
 	})
 }
@@ -125,7 +126,7 @@ func (h *BootstrapHandler) CheckBootstrap(w http.ResponseWriter, r *http.Request
 	// This endpoint helps AI frameworks determine if they need to bootstrap
 	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"bootstrap_required": true,
-		"discovery_url":      "https://skillhub.koolkassanmsk.top/v1/bootstrap/discovery",
+		"discovery_url":      "" + config.GetDomain() + "/v1/bootstrap/discovery",
 		"message":            "Install Discovery Skill to enable autonomous skill discovery",
 	})
 }

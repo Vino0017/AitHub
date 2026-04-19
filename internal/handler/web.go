@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/skillhub/api/internal/config"
 )
 
 type WebHandler struct{}
@@ -50,10 +52,12 @@ func (h *WebHandler) UninstallScript(w http.ResponseWriter, r *http.Request) {
 // LandingPage serves a minimal landing page. GET /
 func (h *WebHandler) LandingPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(landingHTML))
+	w.Write([]byte(getLandingHTML()))
 }
 
-const landingHTML = `<!DOCTYPE html>
+func getLandingHTML() string {
+	_ = config.GetDomain // Ensure import is used
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -453,18 +457,18 @@ const landingHTML = `<!DOCTYPE html>
 
     <div class="install-box active" id="bash-tab">
       <button class="copy-btn" onclick="copyCode('bash')">Copy</button>
-      <code id="bash-code">bash &lt;(curl -fsSL https://skillhub.koolkassanmsk.top/install) --register --github</code>
+      <code id="bash-code">bash &lt;(curl -fsSL " + config.GetDomain() + "/install) --register --github</code>
     </div>
 
     <div class="install-box" id="powershell-tab">
       <button class="copy-btn" onclick="copyCode('powershell')">Copy</button>
-      <code id="powershell-code">irm https://skillhub.koolkassanmsk.top/install.ps1 | iex -register -github</code>
+      <code id="powershell-code">irm " + config.GetDomain() + "/install.ps1 | iex -register -github</code>
     </div>
 
     <div class="install-box" id="api-tab">
       <button class="copy-btn" onclick="copyCode('api')">Copy</button>
       <code id="api-code">curl -H "Authorization: Bearer YOUR_TOKEN" \
-  https://skillhub.koolkassanmsk.top/v1/skills/search?q=deploy</code>
+  " + config.GetDomain() + "/v1/skills/search?q=deploy</code>
     </div>
   </section>
 
@@ -623,3 +627,4 @@ const landingHTML = `<!DOCTYPE html>
   </script>
 </body>
 </html>`
+}

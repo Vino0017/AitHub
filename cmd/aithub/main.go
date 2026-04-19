@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultAPIURL = "https://skillhub.koolkassanmsk.top"
+	defaultAPIURL = "https://your-domain.com"
 	version       = "3.0.0"
 )
 
@@ -41,7 +41,7 @@ func main() {
 		},
 	}
 
-	rootCmd.PersistentFlags().StringVar(&apiURL, "api", "", "API URL (default: $SKILLHUB_API or https://skillhub.koolkassanmsk.top)")
+	rootCmd.PersistentFlags().StringVar(&apiURL, "api", "", "API URL (default: $SKILLHUB_API or https://your-domain.com)")
 	rootCmd.PersistentFlags().StringVar(&token, "token", "", "Auth token (default: $SKILLHUB_TOKEN)")
 
 	rootCmd.AddCommand(searchCmd())
