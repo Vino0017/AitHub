@@ -57,3 +57,4 @@ handler.test
 # Build artifacts
 dist/
 *.test
+.admin_token*.txt
