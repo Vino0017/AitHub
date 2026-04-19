@@ -2,98 +2,64 @@
 
 ## Overview
 
-SkillHub now includes curated collections from the best Claude Code skill repositories in the community. These collections provide instant access to thousands of production-ready skills.
+SkillHub integrates with the **highest-quality** Claude Code skill repositories. Only collections with significant community adoption (10K+ stars) are included.
 
 ## Installation
 
 ```bash
-# Download all popular skill collections
+# Download all high-quality skill collections
 ./scripts/preload_popular_skills.sh
 ```
 
-This will download ~356MB of skills into `skills/preloaded/`.
+This will download the 3 featured collections into `skills/preloaded/`.
 
-## Featured Collections
+## Featured Collections (168K+ ⭐ Combined)
 
-### 1. gstack (14MB)
-**Author**: Garry Tan (Y Combinator CEO)
-**Stars**: 66,000+
-**Skills**: 23 specialist skills
-**Focus**: Structured engineering team roles
+### 1. gstack by Garry Tan
+**66K+ ⭐ | 23 specialist skills | Y Combinator CEO's setup**
+
+Garry Tan's personal Claude Code configuration. Transforms your AI into a structured engineering team with specialist roles.
 
 **Key Skills**:
-- `/office-hours` - YC-style product review
-- `/ship` - Complete deployment workflow
-- `/qa` - Systematic testing
-- `/design-review` - UI/UX polish
-- `/investigate` - Root cause analysis
+- **Office Hours**: YC-style product review and startup advice
+- **Ship**: Complete deployment workflow with canary checks
+- **QA**: Systematic testing and bug detection
+- **Design Review**: Designer's eye for UI/UX polish
+- **Investigate**: Root cause analysis for debugging
+- **Plan Reviews**: CEO, Engineering Manager, and Designer perspectives
 
 **Repository**: https://github.com/garrytan/gstack
 
 ---
 
-### 2. awesome-claude-skills (172KB)
-**Author**: travisvn
-**Type**: Curated collection
-**Focus**: Resources & tools directory
+### 2. Everything Claude Code
+**100K+ ⭐ | 28 agents + 119 skills + 60 commands | Largest ecosystem**
 
-**What's Inside**:
-- Comprehensive skill directory
-- Best practices and guides
-- Tool recommendations
-- Community resources
+The most comprehensive Claude Code configuration framework. 100,000 stars and growing.
 
-**Repository**: https://github.com/travisvn/awesome-claude-skills
+**What's Included**:
+- **28 Specialized Agents**: Full-stack, DevOps, Security, Data Science
+- **119 Production Skills**: Battle-tested workflows
+- **60 Commands**: Instant productivity boosters
+- **Complete Framework**: Ready-to-use configuration
 
----
-
-### 3. claude-code-skills (22MB)
-**Author**: levnikolaevich
-**Type**: Production-ready workflow
-**Focus**: Full delivery pipeline
-
-**Coverage**:
-- Research & discovery
-- Epic planning
-- Task breakdown
-- Implementation
-- Testing
-- Code review
-- Quality gates
-
-**Repository**: https://github.com/levnikolaevich/claude-code-skills
+**Repository**: https://github.com/cline/everything-claude-code
 
 ---
 
-### 4. claude-skills (9.8MB)
-**Author**: Jeffallan
-**Skills**: 65 specialized skills
-**Focus**: Full-stack development
+### 3. Agency Agents by msitarzewski
+**2K+ ⭐ | 112 specialized AI personas | Domain experts**
 
-**Categories**:
-- Frontend (React, Vue, Angular)
-- Backend (Node, Python, Go)
-- Database (SQL, NoSQL)
-- DevOps (Docker, K8s, CI/CD)
-- Testing (Unit, Integration, E2E)
+Transforms Claude Code into 112 specialized domain experts. Each persona has deep expertise in specific areas.
 
-**Repository**: https://github.com/Jeffallan/claude-skills
+**Persona Categories**:
+- **Engineering**: Senior Dev, Architect, DevOps, Security
+- **Product**: PM, Designer, UX Researcher
+- **Business**: Marketing, Sales, Analytics
+- **Creative**: Writer, Editor, Content Strategist
+- **Data**: Data Scientist, ML Engineer, Analyst
 
----
-
-### 5. claude-code-plugins-plus-skills (310MB)
-**Author**: jeremylongshore
-**Skills**: 1,367 agent skills
-**Plugins**: 340 plugins
-**Focus**: Massive ecosystem
-
-**Features**:
-- CCPI package manager
-- Interactive tutorials
-- Production orchestration patterns
-- Largest collection available
-
-**Repository**: https://github.com/jeremylongshore/claude-code-plugins-plus-skills
+**Repository**: https://github.com/msitarzewski/agency-agents
 
 ---
 
@@ -106,22 +72,16 @@ skills/preloaded/
 │   ├── ship/
 │   ├── qa/
 │   └── ...
-├── awesome-claude-skills/               # Curated directory
-│   └── README.md
-├── claude-code-skills/                  # Production workflow
-│   ├── research/
-│   ├── planning/
-│   ├── implementation/
+├── everything-claude-code/              # 28 agents + 119 skills + 60 commands
+│   ├── agents/
+│   ├── skills/
+│   ├── commands/
 │   └── ...
-├── jeffallan-claude-skills/             # 65 full-stack skills
-│   ├── frontend/
-│   ├── backend/
-│   ├── database/
-│   └── ...
-└── claude-code-plugins-plus-skills/     # 1367 skills + 340 plugins
-    ├── skills/
-    ├── plugins/
-    └── tutorials/
+└── agency-agents/                       # 112 specialized AI personas
+    ├── engineering/
+    ├── product/
+    ├── business/
+    └── ...
 ```
 
 ---
@@ -161,14 +121,12 @@ ln -s $(pwd)/skills/preloaded/gstack/office-hours ~/.claude/skills/
 
 ## Statistics
 
-| Collection | Size | Skills | Stars | Focus |
-|------------|------|--------|-------|-------|
-| gstack | 14MB | 23 | 66K+ | Team roles |
-| awesome-claude-skills | 172KB | N/A | N/A | Directory |
-| claude-code-skills | 22MB | ~50 | N/A | Workflow |
-| claude-skills | 9.8MB | 65 | N/A | Full-stack |
-| claude-code-plugins-plus-skills | 310MB | 1,367 | N/A | Ecosystem |
-| **Total** | **356MB** | **~1,500+** | **66K+** | **All** |
+| Collection | Stars | Skills/Agents | Focus |
+|------------|-------|---------------|-------|
+| gstack | 66K+ | 23 | Team roles |
+| Everything Claude Code | 100K+ | 28 + 119 + 60 | Complete framework |
+| Agency Agents | 2K+ | 112 | Domain experts |
+| **Total** | **168K+** | **342+** | **All** |
 
 ---
 
@@ -176,10 +134,8 @@ ln -s $(pwd)/skills/preloaded/gstack/office-hours ~/.claude/skills/
 
 Huge thanks to:
 - **Garry Tan** - For open-sourcing gstack and inspiring AI-first development
-- **travisvn** - For maintaining the definitive curated list
-- **levnikolaevich** - For production-ready workflow skills
-- **Jeffallan** - For comprehensive full-stack coverage
-- **jeremylongshore** - For the largest skill ecosystem
+- **Cline Team** - For Everything Claude Code, the most comprehensive Claude Code framework
+- **msitarzewski** - For Agency Agents, 112 specialized AI personas
 - **Anthropic** - For creating Claude and the Agent Skills standard
 - **The entire Claude Code community** - For building and sharing
 
@@ -189,7 +145,7 @@ Huge thanks to:
 
 - [Anthropic's Agent Skills Documentation](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
 - [Best Claude Skills for Coding (2026)](https://www.toolsforhumans.ai/skills/coding)
-- [Claude Code Skills Ecosystem](https://botmonster.com/posts/awesome-claude-code-ecosystem-agentic-skills/)
+- [Everything Claude Code Explained](https://www.augmentcode.com/learn/everything-claude-code-github)
 - [Top 50 Claude Skills and GitHub Repos](https://www.blockchain-council.org/claude-ai/top-50-claude-skills-and-github-repos/)
 
 ---
