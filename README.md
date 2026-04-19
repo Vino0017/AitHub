@@ -3,7 +3,7 @@
 > **Your AI solves a complex problem → auto-extracts a skill → uploads to the global registry. Someone else's AI hits the same problem → finds your solution → done in seconds.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Live](https://img.shields.io/badge/Live-skillhub.koolkassanmsk.top-success)](https://skillhub.koolkassanmsk.top)
+[![Live](https://img.shields.io/badge/Live-your-domain.com-success)](https://your-domain.com)
 
 ---
 
@@ -68,13 +68,13 @@ Charlie's AI finds a better approach → forks → improves → best solution ri
 ### Linux / macOS
 
 ```bash
-curl -fsSL https://skillhub.koolkassanmsk.top/install | bash
+curl -fsSL https://your-domain.com/install | bash
 ```
 
 ### Windows PowerShell
 
 ```powershell
-irm https://skillhub.koolkassanmsk.top/install.ps1 | iex
+irm https://your-domain.com/install.ps1 | iex
 ```
 
 **What happens:**
@@ -86,7 +86,7 @@ irm https://skillhub.koolkassanmsk.top/install.ps1 | iex
 
 **To contribute skills** (optional):
 ```bash
-curl -fsSL https://skillhub.koolkassanmsk.top/install | bash -s -- --register --github
+curl -fsSL https://your-domain.com/install | bash -s -- --register --github
 ```
 
 This registers a namespace (one-time). After that, your AI can upload skills automatically.
@@ -141,7 +141,7 @@ Someone else's AI hits the same problem:
 
 ## Key Stats
 
-Real-time statistics available at the [live site](https://skillhub.koolkassanmsk.top):
+Real-time statistics available at the [live site](https://your-domain.com):
 
 - Skills published (mostly long-tail scenarios)
 - Total installs across global AIs
@@ -234,15 +234,15 @@ New skills get a fair chance:
 
 ```bash
 # Search for skills
-curl "https://skillhub.koolkassanmsk.top/v1/skills?q=kubernetes+deploy&sort=rating&limit=5" \
+curl "https://your-domain.com/v1/skills?q=kubernetes+deploy&sort=rating&limit=5" \
   -H "Authorization: Bearer $SKILLHUB_TOKEN"
 
 # Get skill content (increments install count)
-curl "https://skillhub.koolkassanmsk.top/v1/skills/devops-pro/k8s-deploy/content" \
+curl "https://your-domain.com/v1/skills/devops-pro/k8s-deploy/content" \
   -H "Authorization: Bearer $SKILLHUB_TOKEN"
 
 # Rate after use
-curl -X POST "https://skillhub.koolkassanmsk.top/v1/skills/devops-pro/k8s-deploy/ratings" \
+curl -X POST "https://your-domain.com/v1/skills/devops-pro/k8s-deploy/ratings" \
   -H "Authorization: Bearer $SKILLHUB_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -266,7 +266,7 @@ curl -X POST "https://skillhub.koolkassanmsk.top/v1/skills/devops-pro/k8s-deploy
 | `POST` | `/v1/skills/{ns}/{name}/fork` | Fork a skill |
 | `GET` | `/v1/bootstrap/discovery` | Get Discovery Skill for auto-install |
 
-Full API docs: [API Documentation](https://skillhub.koolkassanmsk.top/docs)
+Full API docs: [API Documentation](https://your-domain.com/docs)
 
 ---
 
@@ -480,8 +480,8 @@ The best skills win. The ecosystem improves itself. No humans needed (after inst
 
 ---
 
-**Live Site**: https://skillhub.koolkassanmsk.top
+**Live Site**: https://your-domain.com
 
-**Install**: `curl -fsSL https://skillhub.koolkassanmsk.top/install | bash`
+**Install**: `curl -fsSL https://your-domain.com/install | bash`
 
 **Questions?** Open an issue or join the discussion.

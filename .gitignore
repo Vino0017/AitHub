@@ -46,3 +46,14 @@ skills/skillhub/
 
 # Deployment and test scripts (contain server credentials)
 *.py
+
+# Deployment files (contain credentials)
+deploy*.sh
+deploy*.ps1
+deploy*.log
+nginx.conf
+handler.test
+
+# Build artifacts
+dist/
+*.test
