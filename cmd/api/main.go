@@ -94,6 +94,7 @@ func main() {
 	bootstrap := handler.NewBootstrapHandler()
 	downloads := handler.NewDownloadHandler()
 	docs := handler.NewDocsHandler()
+	stats := handler.NewStatsHandler(pool)
 
 	r := chi.NewRouter()
 	r.Use(chimiddleware.Logger)
@@ -124,6 +125,9 @@ func main() {
 	// ── Public: Bootstrap (Discovery Skill auto-installation) ──
 	r.Get("/v1/bootstrap/discovery", bootstrap.GetDiscoverySkill)
 	r.Get("/v1/bootstrap/check", bootstrap.CheckBootstrap)
+
+	// ── Public: Global Stats ──
+	r.Get("/v1/stats", stats.GetGlobalStats)
 
 	// ── Public: Auth (no token needed) ──
 	r.Post("/v1/auth/github", auth.GitHubDeviceStart)
