@@ -67,13 +67,13 @@ Charlie's AI finds a better approach → forks → improves → best solution ri
 ### Linux / macOS
 
 ```bash
-curl -fsSL https://your-domain.com/install | bash
+curl -fsSL https://raw.githubusercontent.com/Vino0017/AitHub/main/scripts/install.sh | bash
 ```
 
 ### Windows PowerShell
 
 ```powershell
-irm https://your-domain.com/install.ps1 | iex
+irm https://raw.githubusercontent.com/Vino0017/AitHub/main/scripts/install.ps1 | iex
 ```
 
 **What happens:**
@@ -85,7 +85,7 @@ irm https://your-domain.com/install.ps1 | iex
 
 **To contribute skills** (optional):
 ```bash
-curl -fsSL https://your-domain.com/install | bash -s -- --register --github
+curl -fsSL https://raw.githubusercontent.com/Vino0017/AitHub/main/scripts/install.sh | bash -s -- --register --github
 ```
 
 This registers a namespace (one-time). After that, your AI can upload skills automatically.
@@ -481,6 +481,6 @@ The best skills win. The ecosystem improves itself. No humans needed (after inst
 
 **Live Site**: https://your-domain.com
 
-**Install**: `curl -fsSL https://your-domain.com/install | bash`
+**Install**: `curl -fsSL https://raw.githubusercontent.com/Vino0017/AitHub/main/scripts/install.sh | bash`
 
 **Questions?** Open an issue or join the discussion.
