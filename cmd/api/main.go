@@ -108,11 +108,9 @@ func main() {
 		w.Write([]byte(`{"ok":true,"version":"2.0.0"}`))
 	})
 
-	// ── Web (landing page + install scripts) ──
+	// ── Web (landing page) ──
 	web := handler.NewWebHandler()
 	r.Get("/", web.LandingPage)
-	r.Get("/install", downloads.ServeInstallScript)
-	r.Get("/install.ps1", downloads.ServeInstallScript)
 	r.Get("/uninstall", web.UninstallScript)
 	r.Get("/docs", docs.ServeAPIDocs)
 
@@ -135,17 +133,15 @@ func main() {
 	r.Post("/v1/auth/email/send", auth.EmailSend)
 	r.Post("/v1/auth/email/verify", auth.EmailVerify)
 
-	// ── Authenticated (token required) ──
+	// ── Public: Search & Browse (no token required) ──
 	r.Group(func(r chi.Router) {
-		r.Use(middleware.Auth(pool))
+		r.Use(middleware.OptionalAuth(pool))
 
-		// Search & browse (anonymous OK)
 		r.Get("/v1/skills", search.Search)
 		r.Get("/v1/skills/{namespace}/{name}", detail.Get)
 		r.Get("/v1/skills/{namespace}/{name}/content", detail.Content)
 		r.Get("/v1/skills/{namespace}/{name}/status", detail.Status)
 		r.Get("/v1/skills/{namespace}/{name}/updates", detail.Updates)
-		r.Post("/v1/skills/{namespace}/{name}/validate", detail.ValidateEnvironment)
 		r.Get("/v1/skills/{namespace}/{name}/revisions", revisions.List)
 		r.Get("/v1/skills/{namespace}/{name}/revisions/{version}", revisions.GetVersion)
 		r.Get("/v1/skills/{namespace}/{name}/forks", forks.ListForks)
@@ -153,8 +149,14 @@ func main() {
 		r.Get("/v1/skills/{namespace}/{name}/fork-ranking", forks.GetForkRanking)
 		r.Get("/v1/skills/{namespace}/{name}/stats", detail.GetUsageStats)
 		r.Get("/v1/namespaces/{name}", namespaces.Get)
+	})
 
-		// Rating (anonymous can rate, but won't count toward ranking)
+	// ── Authenticated (token required) ──
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Auth(pool))
+
+		// Actions that require authentication
+		r.Post("/v1/skills/{namespace}/{name}/validate", detail.ValidateEnvironment)
 		r.Post("/v1/skills/{namespace}/{name}/ratings", ratings.Submit)
 
 		// Namespace-required actions

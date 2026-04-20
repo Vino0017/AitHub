@@ -363,7 +363,7 @@ func rateCmd() *cobra.Command {
 			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 				fmt.Fprintf(os.Stderr, "Error: Authentication required\n\n")
 				fmt.Fprintf(os.Stderr, "To rate skills, you need a registered account.\n")
-				fmt.Fprintf(os.Stderr, "Run: bash <(curl -fsSL %s/install) --register --github\n", apiURL)
+				fmt.Fprintf(os.Stderr, "Run: npx @aithub/cli --register --github\n")
 				return fmt.Errorf("authentication required")
 			}
 
@@ -434,7 +434,7 @@ func submitCmd() *cobra.Command {
 			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 				fmt.Fprintf(os.Stderr, "Error: Authentication required\n\n")
 				fmt.Fprintf(os.Stderr, "To submit skills, you need a registered account.\n")
-				fmt.Fprintf(os.Stderr, "Run: bash <(curl -fsSL %s/install) --register --github\n", apiURL)
+				fmt.Fprintf(os.Stderr, "Run: npx @aithub/cli --register --github\n")
 				return fmt.Errorf("authentication required")
 			}
 
@@ -565,7 +565,7 @@ func forkCmd() *cobra.Command {
 			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 				fmt.Fprintf(os.Stderr, "Error: Authentication required\n\n")
 				fmt.Fprintf(os.Stderr, "To fork skills, you need a registered account.\n")
-				fmt.Fprintf(os.Stderr, "Run: bash <(curl -fsSL %s/install) --register --github\n", apiURL)
+				fmt.Fprintf(os.Stderr, "Run: npx @aithub/cli --register --github\n")
 				return fmt.Errorf("authentication required")
 			}
 
