@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	defaultAPIURL = "https://your-domain.com"
-	version       = "3.0.0"
+	defaultAPIURL = "https://aithub.space"
+	version       = "3.1.0"
 )
 
 var (
@@ -41,7 +41,7 @@ func main() {
 		},
 	}
 
-	rootCmd.PersistentFlags().StringVar(&apiURL, "api", "", "API URL (default: $SKILLHUB_API or https://your-domain.com)")
+	rootCmd.PersistentFlags().StringVar(&apiURL, "api", "", "API URL (default: $SKILLHUB_API or https://aithub.space)")
 	rootCmd.PersistentFlags().StringVar(&token, "token", "", "Auth token (default: $SKILLHUB_TOKEN)")
 
 	rootCmd.AddCommand(searchCmd())
@@ -51,6 +51,8 @@ func main() {
 	rootCmd.AddCommand(statusCmd())
 	rootCmd.AddCommand(forkCmd())
 	rootCmd.AddCommand(detailsCmd())
+	rootCmd.AddCommand(configCmd())
+	rootCmd.AddCommand(diffCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
@@ -63,6 +65,7 @@ func searchCmd() *cobra.Command {
 		sort      string
 		osFilter  string
 		limit     int
+		offset    int
 		jsonOut   bool
 	)
 
@@ -73,7 +76,7 @@ func searchCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			query := strings.Join(args, " ")
 
-			url := fmt.Sprintf("%s/v1/skills?q=%s&limit=%d", apiURL, query, limit)
+			url := fmt.Sprintf("%s/v1/skills?q=%s&limit=%d&offset=%d", apiURL, query, limit, offset)
 			if framework != "" {
 				url += "&framework=" + framework
 			}
@@ -121,6 +124,9 @@ func searchCmd() *cobra.Command {
 					OutcomeSuccessRate float64  `json:"outcome_success_rate"`
 					Tags               []string `json:"tags"`
 				} `json:"skills"`
+				Total  int `json:"total"`
+				Limit  int `json:"limit"`
+				Offset int `json:"offset"`
 			}
 
 			if err := json.Unmarshal(body, &result); err != nil {
@@ -132,7 +138,11 @@ func searchCmd() *cobra.Command {
 				return nil
 			}
 
-			fmt.Printf("Found %d skill(s):\n\n", len(result.Skills))
+			fmt.Printf("Found %d skill(s) (showing %d-%d of %d):\n\n",
+				len(result.Skills),
+				result.Offset+1,
+				result.Offset+len(result.Skills),
+				result.Total)
 			for i, skill := range result.Skills {
 				fmt.Printf("%d. %s\n", i+1, skill.FullName)
 				fmt.Printf("   %s\n", skill.Description)
@@ -144,6 +154,12 @@ func searchCmd() *cobra.Command {
 				fmt.Println()
 			}
 
+			// Show pagination hint
+			if result.Offset+len(result.Skills) < result.Total {
+				nextOffset := result.Offset + result.Limit
+				fmt.Printf("💡 To see more results, use: --offset %d\n", nextOffset)
+			}
+
 			return nil
 		},
 	}
@@ -151,7 +167,8 @@ func searchCmd() *cobra.Command {
 	cmd.Flags().StringVar(&framework, "framework", "", "Filter by framework")
 	cmd.Flags().StringVar(&sort, "sort", "rating", "Sort by: rating, installs, new")
 	cmd.Flags().StringVar(&osFilter, "os", "", "Filter by OS")
-	cmd.Flags().IntVar(&limit, "limit", 10, "Max results")
+	cmd.Flags().IntVar(&limit, "limit", 50, "Max results (default 50, max 100)")
+	cmd.Flags().IntVar(&offset, "offset", 0, "Offset for pagination")
 	cmd.Flags().BoolVar(&jsonOut, "json", false, "Output raw JSON")
 
 	return cmd
@@ -668,4 +685,277 @@ func detailsCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&jsonOut, "json", false, "Output raw JSON")
 
 	return cmd
+}
+
+func configCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "config",
+		Short: "Manage configuration",
+	}
+
+	setCmd := &cobra.Command{
+		Use:   "set <key> <value>",
+		Short: "Set a config value (api, token)",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			key := args[0]
+			value := args[1]
+
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				return fmt.Errorf("failed to get home directory: %w", err)
+			}
+
+			configDir := homeDir + "/.aithub"
+			if err := os.MkdirAll(configDir, 0755); err != nil {
+				return fmt.Errorf("failed to create config directory: %w", err)
+			}
+
+			configFile := configDir + "/config.json"
+			config := make(map[string]string)
+
+			// Load existing config
+			if data, err := os.ReadFile(configFile); err == nil {
+				json.Unmarshal(data, &config)
+			}
+
+			// Update config
+			config[key] = value
+
+			// Save config
+			data, err := json.MarshalIndent(config, "", "  ")
+			if err != nil {
+				return err
+			}
+
+			if err := os.WriteFile(configFile, data, 0644); err != nil {
+				return fmt.Errorf("failed to write config: %w", err)
+			}
+
+			fmt.Printf("✓ Config updated: %s = %s\n", key, value)
+			fmt.Printf("  Saved to: %s\n", configFile)
+			return nil
+		},
+	}
+
+	getCmd := &cobra.Command{
+		Use:   "get <key>",
+		Short: "Get a config value",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			key := args[0]
+
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				return fmt.Errorf("failed to get home directory: %w", err)
+			}
+
+			configFile := homeDir + "/.aithub/config.json"
+			data, err := os.ReadFile(configFile)
+			if err != nil {
+				return fmt.Errorf("config file not found: %s", configFile)
+			}
+
+			config := make(map[string]string)
+			if err := json.Unmarshal(data, &config); err != nil {
+				return err
+			}
+
+			if value, ok := config[key]; ok {
+				fmt.Println(value)
+			} else {
+				return fmt.Errorf("key not found: %s", key)
+			}
+
+			return nil
+		},
+	}
+
+	listCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List all config values",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				return fmt.Errorf("failed to get home directory: %w", err)
+			}
+
+			configFile := homeDir + "/.aithub/config.json"
+			data, err := os.ReadFile(configFile)
+			if err != nil {
+				fmt.Println("No config file found. Use 'aithub config set' to create one.")
+				return nil
+			}
+
+			config := make(map[string]string)
+			if err := json.Unmarshal(data, &config); err != nil {
+				return err
+			}
+
+			if len(config) == 0 {
+				fmt.Println("No config values set.")
+				return nil
+			}
+
+			fmt.Println("Current configuration:")
+			for key, value := range config {
+				// Mask sensitive values
+				if key == "token" && len(value) > 8 {
+					value = value[:8] + "..." + value[len(value)-4:]
+				}
+				fmt.Printf("  %s = %s\n", key, value)
+			}
+
+			return nil
+		},
+	}
+
+	cmd.AddCommand(setCmd)
+	cmd.AddCommand(getCmd)
+	cmd.AddCommand(listCmd)
+
+	return cmd
+}
+
+func diffCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "diff <namespace/name@v1> <namespace/name@v2>",
+		Short: "Show differences between two skill versions",
+		Long: `Compare two versions of a skill and show the changelog.
+
+Examples:
+  aithub diff anthropics/pdf@1.0.0 anthropics/pdf@1.1.0
+  aithub diff anthropics/pdf@1.0.0 anthropics/pdf  (compare with latest)`,
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Parse first version
+			parts1 := strings.Split(args[0], "@")
+			skillPath1 := parts1[0]
+			version1 := ""
+			if len(parts1) > 1 {
+				version1 = parts1[1]
+			}
+
+			// Parse second version
+			parts2 := strings.Split(args[1], "@")
+			skillPath2 := parts2[0]
+			version2 := ""
+			if len(parts2) > 1 {
+				version2 = parts2[1]
+			}
+
+			// Validate same skill
+			if skillPath1 != skillPath2 {
+				return fmt.Errorf("cannot compare different skills: %s vs %s", skillPath1, skillPath2)
+			}
+
+			skillParts := strings.Split(skillPath1, "/")
+			if len(skillParts) != 2 {
+				return fmt.Errorf("invalid format, use: namespace/name@version")
+			}
+
+			// Fetch both versions
+			content1, err := fetchSkillContent(skillParts[0], skillParts[1], version1)
+			if err != nil {
+				return fmt.Errorf("failed to fetch version %s: %w", version1, err)
+			}
+
+			content2, err := fetchSkillContent(skillParts[0], skillParts[1], version2)
+			if err != nil {
+				return fmt.Errorf("failed to fetch version %s: %w", version2, err)
+			}
+
+			// Show diff
+			fmt.Printf("Comparing %s@%s vs %s@%s\n\n", skillPath1, version1, skillPath2, version2)
+
+			if content1 == content2 {
+				fmt.Println("✓ No differences found.")
+				return nil
+			}
+
+			// Simple line-by-line diff
+			lines1 := strings.Split(content1, "\n")
+			lines2 := strings.Split(content2, "\n")
+
+			fmt.Println("Changes:")
+			fmt.Println("--------")
+
+			maxLen := len(lines1)
+			if len(lines2) > maxLen {
+				maxLen = len(lines2)
+			}
+
+			changes := 0
+			for i := 0; i < maxLen; i++ {
+				line1 := ""
+				line2 := ""
+
+				if i < len(lines1) {
+					line1 = lines1[i]
+				}
+				if i < len(lines2) {
+					line2 = lines2[i]
+				}
+
+				if line1 != line2 {
+					changes++
+					if line1 != "" && line2 == "" {
+						fmt.Printf("- %s\n", line1)
+					} else if line1 == "" && line2 != "" {
+						fmt.Printf("+ %s\n", line2)
+					} else {
+						fmt.Printf("- %s\n", line1)
+						fmt.Printf("+ %s\n", line2)
+					}
+				}
+			}
+
+			fmt.Printf("\n%d line(s) changed\n", changes)
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+func fetchSkillContent(namespace, name, version string) (string, error) {
+	url := fmt.Sprintf("%s/v1/skills/%s/%s/content", apiURL, namespace, name)
+	if version != "" {
+		url += "?version=" + version
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("API error (%d): %s", resp.StatusCode, string(body))
+	}
+
+	var result struct {
+		Content string `json:"content"`
+		Version string `json:"version"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", err
+	}
+
+	return result.Content, nil
 }

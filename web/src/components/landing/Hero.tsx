@@ -105,7 +105,7 @@ function Terminal() {
         <div className="text-[10.5px] tracking-[0.18em] uppercase text-[var(--muted)] mb-2.5">INSTALL · ONE LINE</div>
         <div className="flex items-center gap-2.5">
           <span className="text-[var(--accent)] font-semibold">$</span>
-          <span>npx @aithub/cli init</span>
+          <span>npx @aithub/cli</span>
           <span className="inline-block w-2 h-3.5 bg-[var(--accent)] -mb-0.5 ml-0.5 animate-pulse" />
         </div>
         <button className="absolute top-3.5 right-0 text-[10.5px] tracking-[0.12em] uppercase text-[var(--muted)] border border-[var(--rule-strong)] py-1 px-2 rounded-full hover:text-[var(--ink)] hover:border-[var(--ink)] transition-colors mono">

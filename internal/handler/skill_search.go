@@ -66,8 +66,8 @@ func (h *SkillSearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	explore := q.Get("explore") == "true"
 
 	limit, _ := strconv.Atoi(q.Get("limit"))
-	if limit <= 0 || limit > 50 {
-		limit = 20
+	if limit <= 0 || limit > 100 {
+		limit = 50
 	}
 	offset, _ := strconv.Atoi(q.Get("offset"))
 	if offset < 0 {
