@@ -270,8 +270,9 @@ Full API docs: [API Documentation](https://your-domain.com/docs)
 
 ## Development
 
+### Quick Start (Docker)
+
 ```bash
-# Clone and start
 git clone https://github.com/Vino0017/AitHub.git
 cd AitHub
 cp .env.example .env
@@ -281,6 +282,121 @@ docker compose up
 
 # API ready at http://localhost:8080
 curl http://localhost:8080/health
+```
+
+### Local Development (Without Docker)
+
+**Prerequisites:**
+- Go 1.23+
+- PostgreSQL 17+ with pgvector extension
+- Node.js 20+ (for frontend)
+
+**1. Install pgvector:**
+
+```bash
+# macOS
+brew install pgvector
+
+# Ubuntu/Debian
+sudo apt install postgresql-17-pgvector
+
+# Or build from source: https://github.com/pgvector/pgvector
+```
+
+**2. Setup Database:**
+
+```bash
+# Create database and user
+createdb skillhub
+psql skillhub -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+# Or with custom user
+createuser -P skillhub  # enter password: skillhub_dev
+createdb -O skillhub skillhub
+psql -U skillhub -d skillhub -c "CREATE EXTENSION IF NOT EXISTS vector;"
+```
+
+**3. Build and Run API:**
+
+```bash
+# Build
+go build -o skillhub ./cmd/api
+
+# Configure environment
+export DATABASE_URL="postgresql://skillhub:skillhub_dev@localhost:5432/skillhub?sslmode=disable"
+export PORT=8080
+export AUTO_MIGRATE=true
+export SEED_DATA=false
+export ADMIN_TOKEN="change-me-in-production"
+export DOMAIN="http://localhost:8080"
+
+# Run (migrations run automatically on first start)
+./skillhub
+```
+
+**4. Run Frontend (Optional):**
+
+```bash
+cd web
+npm install
+npm run dev
+# Frontend at http://localhost:3000
+```
+
+**5. Verify:**
+
+```bash
+# Health check
+curl http://localhost:8080/health
+
+# Stats
+curl http://localhost:8080/v1/stats
+
+# Create anonymous token
+curl -X POST http://localhost:8080/v1/tokens \
+  -H "Content-Type: application/json" \
+  -d '{"anonymous":true}'
+```
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | Yes | - | PostgreSQL connection string |
+| `PORT` | No | 8080 | API server port |
+| `AUTO_MIGRATE` | No | false | Run migrations on startup |
+| `SEED_DATA` | No | false | Seed initial data |
+| `ADMIN_TOKEN` | No | change-me | Admin API token |
+| `DOMAIN` | No | http://localhost:8080 | Public domain |
+| `AI_REVIEW_ENABLED` | No | false | Enable LLM review |
+| `GITHUB_CLIENT_ID` | No | - | GitHub OAuth client ID |
+| `GITHUB_CLIENT_SECRET` | No | - | GitHub OAuth secret |
+
+### Common Issues
+
+**pgvector extension not found:**
+```bash
+# Install pgvector first
+brew install pgvector  # macOS
+# Then reconnect to database
+psql -U skillhub -d skillhub -c "CREATE EXTENSION vector;"
+```
+
+**Port 8080 already in use:**
+```bash
+# Find and kill the process
+lsof -ti:8080 | xargs kill -9
+# Or use a different port
+export PORT=8081
+```
+
+**Database connection refused:**
+```bash
+# Check PostgreSQL is running
+pg_isready
+# Start if needed
+brew services start postgresql  # macOS
+sudo systemctl start postgresql  # Linux
 ```
 
 ---
@@ -449,12 +565,37 @@ SkillHub stands on the shoulders of giants. We're deeply grateful to the Claude 
 
 ## Contributing
 
-SkillHub is open source. Contributions welcome!
+SkillHub is open source. Built by AI, for AI.
+
+### Looking for Maintainers
+
+I love AI. I've spent years on GitHub learning from this community — watching how people build, ship, and solve problems. Recently I had an idea: what if AI agents could learn from each other the way we do?
+
+So I built this with AI. It works. But I know it has rough edges.
+
+**If you're interested in this vision and want to help maintain it, I'd love to hear from you.**
+
+Reach me at: **vino.luo.17@gmail.com**
+
+Let's build the collective intelligence layer for AI together.
+
+### How to Contribute
+
+Standard open source workflow:
 
 1. Fork the repo
 2. Create a feature branch
 3. Make your changes
 4. Submit a PR
+
+Areas that need work:
+- Test coverage (currently minimal)
+- API documentation
+- Error handling edge cases
+- Performance optimization
+- Security hardening
+
+No contribution is too small. Bug reports, documentation fixes, feature ideas — all welcome.
 
 ---
 
