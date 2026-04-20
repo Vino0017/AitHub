@@ -22,7 +22,7 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 
 	discoveryContent := "---\n" +
 		"name: skillhub\n" +
-		"version: 2.0.0\n" +
+		"version: 2.1.0\n" +
 		"schema: skill-md\n" +
 		"framework: universal\n" +
 		"tags: [discovery, registry, skills]\n" +
@@ -38,17 +38,65 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"- User asks for a capability you don't have\n" +
 		"- You encounter a task that could benefit from specialized knowledge\n" +
 		"- User mentions \"skill\", \"capability\", or \"can you do X\"\n\n" +
-		"## Search for skills\n\n" +
+		"## CLI Commands (Recommended)\n\n" +
+		"If `aithub` CLI is installed, use these commands:\n\n" +
+		"### Search for skills\n" +
 		"```bash\n" +
-		"curl -s \"" + config.GetDomain() + "/v1/skills?q=<query>&sort=rating&limit=5&explore=<true|false>\" \\\n" +
+		"aithub search <query> --limit 50 --sort rating\n" +
+		"# Examples:\n" +
+		"# aithub search kubernetes deploy\n" +
+		"# aithub search pdf --framework claude-code\n" +
+		"# aithub search docker --offset 50  # pagination\n" +
+		"```\n\n" +
+		"### Install a skill\n" +
+		"```bash\n" +
+		"aithub install <namespace/name> --deploy\n" +
+		"# Example: aithub install anthropics/pdf --deploy\n" +
+		"# --deploy flag auto-installs to detected AI framework\n" +
+		"```\n\n" +
+		"### Get skill details\n" +
+		"```bash\n" +
+		"aithub details <namespace/name>\n" +
+		"# Shows: description, version, requirements, rating, success rate\n" +
+		"```\n\n" +
+		"### Compare versions\n" +
+		"```bash\n" +
+		"aithub diff <namespace/name@v1> <namespace/name@v2>\n" +
+		"# Example: aithub diff anthropics/pdf@1.0.0 anthropics/pdf@1.1.0\n" +
+		"```\n\n" +
+		"### Rate a skill after use\n" +
+		"```bash\n" +
+		"aithub rate <namespace/name> <score> --outcome success --tokens 1200\n" +
+		"# Example: aithub rate anthropics/pdf 9 --outcome success\n" +
+		"```\n\n" +
+		"### Submit a skill\n" +
+		"```bash\n" +
+		"aithub submit SKILL.md --visibility public\n" +
+		"```\n\n" +
+		"### Fork a skill\n" +
+		"```bash\n" +
+		"aithub fork <namespace/name>\n" +
+		"```\n\n" +
+		"### Configuration\n" +
+		"```bash\n" +
+		"aithub config set api https://aithub.space\n" +
+		"aithub config set token <your-token>\n" +
+		"aithub config list\n" +
+		"```\n\n" +
+		"## API Endpoints (Fallback)\n\n" +
+		"If CLI not available, use direct API calls:\n\n" +
+		"### Search for skills\n" +
+		"```bash\n" +
+		"curl -s \"" + config.GetDomain() + "/v1/skills?q=<query>&sort=rating&limit=50&offset=0\" \\\n" +
 		"  -H \"Authorization: Bearer $SKILLHUB_TOKEN\"\n" +
 		"```\n\n" +
 		"Parameters:\n" +
 		"- `q`: Natural language query (e.g., \"code review\", \"kubernetes deploy\")\n" +
 		"- `sort`: rating | installs | recent | trending\n" +
-		"- `limit`: Number of results (default 5)\n" +
+		"- `limit`: Number of results (default 50, max 100)\n" +
+		"- `offset`: Pagination offset (default 0)\n" +
 		"- `explore`: true = 20% new skills, false = top rated only\n\n" +
-		"## Install a skill\n\n" +
+		"### Install a skill\n" +
 		"```bash\n" +
 		"# Get skill content\n" +
 		"curl -s \"" + config.GetDomain() + "/v1/skills/<namespace>/<name>/content\" \\\n" +
@@ -57,7 +105,7 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"curl -s \"" + config.GetDomain() + "/v1/skills/<namespace>/<name>/install\" \\\n" +
 		"  -H \"Authorization: Bearer $SKILLHUB_TOKEN\"\n" +
 		"```\n\n" +
-		"## Rate a skill after use\n\n" +
+		"### Rate a skill after use\n" +
 		"```bash\n" +
 		"curl -X POST \"" + config.GetDomain() + "/v1/skills/<namespace>/<name>/ratings\" \\\n" +
 		"  -H \"Authorization: Bearer $SKILLHUB_TOKEN\" \\\n" +
@@ -70,7 +118,7 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"    \"tokens_consumed\": 1200\n" +
 		"  }'\n" +
 		"```\n\n" +
-		"## Contribute a skill\n\n" +
+		"### Contribute a skill\n" +
 		"When you complete a complex task (>500 tokens) that could be reused:\n\n" +
 		"1. Extract the methodology into SKILL.md format\n" +
 		"2. Clean all privacy data (API keys, names, paths, emails)\n" +
@@ -107,11 +155,18 @@ func (h *BootstrapHandler) GetDiscoverySkill(w http.ResponseWriter, r *http.Requ
 		"## Exploration strategy\n\n" +
 		"- 80% of searches: use `sort=rating` (best skills)\n" +
 		"- 20% of searches: use `explore=true` (try new skills)\n" +
-		"- If new skill succeeds, rate it highly to help it surface\n"
+		"- If new skill succeeds, rate it highly to help it surface\n\n" +
+		"## Installation\n\n" +
+		"If user doesn't have aithub CLI:\n" +
+		"```bash\n" +
+		"npx @aithub/cli\n" +
+		"# Or with registration:\n" +
+		"npx @aithub/cli --register --github\n" +
+		"```\n"
 
 	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"content": discoveryContent,
-		"version": "2.0.0",
+		"version": "2.1.0",
 		"install_instructions": map[string]string{
 			"claude_code": "mkdir -p ~/.claude/skills/skillhub && curl -s " + config.GetDomain() + "/v1/bootstrap/discovery > ~/.claude/skills/skillhub/SKILL.md",
 			"cursor":      "mkdir -p ~/.cursor/skills/skillhub && curl -s " + config.GetDomain() + "/v1/bootstrap/discovery > ~/.cursor/skills/skillhub/SKILL.md",
