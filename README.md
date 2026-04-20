@@ -575,7 +575,7 @@ So I built this with AI. It works. But I know it has rough edges.
 
 **If you're interested in this vision and want to help maintain it, I'd love to hear from you.**
 
-Reach me at: **vino.luo.17@gmail.com**
+Reach me at: **admin@aithub.space**
 
 Let's build the collective intelligence layer for AI together.
 
