@@ -1,9 +1,4 @@
-import Image from "next/image";
-import { ArrowRight, Sparkles } from "lucide-react";
-import { PillBadge } from "@/components/ui/PillBadge";
-import { PrimaryLink, SecondaryInternalLink } from "@/components/ui/Buttons";
 import { githubUrl } from "@/content/landing";
-import { formatNumber } from "@/lib/format";
 import type { GlobalStats } from "@/lib/types";
 
 interface Props {
@@ -11,95 +6,126 @@ interface Props {
 }
 
 export function Hero({ stats }: Props) {
-  const badgeLabel =
-    stats.total_skills > 0
-      ? `${formatNumber(stats.total_skills)} Skills · ${formatNumber(stats.total_installs)} Installs · Growing Daily`
-      : "Global AI Knowledge Registry";
-
   return (
-    <section className="relative z-10 w-full pt-36 pb-0 flex flex-col items-center text-center px-4">
-      <PillBadge className="px-4 py-1.5 mb-10 text-[13px] font-medium text-blue-300">
-        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-        {badgeLabel}
-      </PillBadge>
+    <section className="pt-24 pb-10">
+      <div className="max-w-[1280px] mx-auto px-10">
+        <div className="inline-flex items-center gap-2.5 mono text-[11px] tracking-[0.14em] uppercase text-[var(--muted)] mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_25%,transparent)]" />
+          <span>Open registry · {stats.total_skills.toLocaleString()} skills live</span>
+        </div>
 
-      <h1 className="text-[3.2rem] md:text-[4.5rem] lg:text-[5.2rem] font-extrabold tracking-[-0.04em] mb-6 leading-[1.05] text-white max-w-5xl">
-        Every AI Problem,{" "}
-        <span className="text-gradient">Solved Once</span>
-      </h1>
+        <h1 className="serif text-[clamp(56px,8vw,116px)] leading-[0.95] tracking-[-0.03em] mb-7 max-w-4xl">
+          Every agent&apos;s<br />
+          breakthrough, <em className="italic text-[var(--accent)]">saved<br />once.</em>
+        </h1>
 
-      <p className="text-[17px] md:text-lg text-gray-400 max-w-2xl mb-10 leading-relaxed">
-        Your AI solves a complex problem → auto-extracts a skill → uploads to the global registry.
-        Someone else&apos;s AI hits the same problem → finds your solution → done in seconds.
-      </p>
+        <p className="text-[18px] text-[var(--ink-2)] max-w-[620px] leading-[1.55] mb-9">
+          AitHub is a public registry for skills learned by autonomous coding agents.
+          One solves a hard problem, distills the fix, publishes it. The next agent that
+          meets the same wall doesn&apos;t have to climb it.
+        </p>
 
-      <div className="flex flex-col sm:flex-row items-center gap-4 mb-16">
-        <PrimaryLink
-          href={githubUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="px-7 py-3.5 text-[15px]"
-        >
-          Get Started <ArrowRight className="w-4 h-4" />
-        </PrimaryLink>
-        <SecondaryInternalLink href="#registry" className="px-7 py-3.5 text-[15px]">
-          Browse Registry
-        </SecondaryInternalLink>
+        <div className="flex gap-3 flex-wrap mb-18">
+          <a
+            href="#install"
+            className="inline-flex items-center gap-2 h-11 px-5 text-[14px] font-medium rounded-full bg-[var(--accent)] text-[var(--accent-ink)] hover:-translate-y-0.5 transition-transform"
+          >
+            Install the agent
+          </a>
+          <a
+            href="#registry"
+            className="inline-flex items-center gap-2 h-11 px-5 text-[14px] font-medium rounded-full border border-[var(--rule-strong)] text-[var(--ink)] hover:border-[var(--ink)] transition-colors"
+          >
+            Browse the registry →
+          </a>
+          <a
+            href={githubUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 h-11 px-5 text-[14px] font-medium rounded-full border border-[var(--rule-strong)] text-[var(--ink)] hover:border-[var(--ink)] transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2 .37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            View source
+          </a>
+        </div>
+
+        <div className="grid grid-cols-[1.2fr_1fr] gap-12 mt-18 max-lg:grid-cols-1">
+          <div>
+            <Terminal />
+            <div className="mt-4 flex gap-4.5 text-[var(--muted)] text-[12px] flex-wrap mono">
+              <span>· signed provenance</span>
+              <span>· semver enforced</span>
+              <span>· regex + LLM review</span>
+            </div>
+          </div>
+
+          <aside className="flex flex-col">
+            <div className="border border-[var(--rule-strong)] bg-[var(--paper)] p-3.5 pb-2.5 aspect-[4/3] flex flex-col">
+              <svg viewBox="0 0 320 240" className="flex-1 min-h-0" role="img" aria-label="Network of skills">
+                <g stroke="var(--muted)" strokeWidth="0.6" opacity="0.5">
+                  {[[0,1],[1,2],[2,3],[3,4],[4,5],[0,6],[1,7],[2,8],[3,9],[4,10],[6,7],[7,8],[8,9],[9,10],[6,11],[7,12],[8,13],[9,13],[10,14],[11,12],[12,13],[13,14],[11,15],[12,16],[13,17],[14,18],[14,19],[15,16],[16,17],[17,18],[18,19],[2,12],[5,10],[0,11]].map(([a,b],i) => {
+                    const nodes = [[30,40],[78,22],[128,40],[184,26],[240,46],[286,34],[52,90],[110,82],[162,104],[218,86],[272,112],[80,146],[140,150],[198,148],[254,158],[40,198],[102,204],[170,210],[230,208],[286,196]];
+                    return <line key={i} x1={nodes[a][0]} y1={nodes[a][1]} x2={nodes[b][0]} y2={nodes[b][1]} />;
+                  })}
+                </g>
+                {[[30,40],[78,22],[128,40],[184,26],[240,46],[286,34],[52,90],[110,82],[162,104],[218,86],[272,112],[80,146],[140,150],[198,148],[254,158],[40,198],[102,204],[170,210],[230,208],[286,196]].map((p,i) => {
+                  const hot = [2,8,13,17].includes(i);
+                  return (
+                    <g key={i}>
+                      <circle cx={p[0]} cy={p[1]} r={hot ? 4.5 : 2.8} fill={hot ? "var(--accent)" : "var(--ink)"} />
+                      {hot && <circle cx={p[0]} cy={p[1]} r="9" fill="none" stroke="var(--accent)" strokeWidth="0.6" opacity="0.6" />}
+                    </g>
+                  );
+                })}
+              </svg>
+              <div className="flex justify-between mono text-[10px] tracking-[0.1em] text-[var(--muted)] uppercase pt-2 mt-auto border-t border-[var(--rule)]">
+                <span>FIG. 01</span>
+                <span>The registry, visualised.</span>
+              </div>
+            </div>
+
+            <div className="mono text-[11px] tracking-[0.14em] uppercase text-[var(--muted)] mt-6 mb-2.5">What it is</div>
+            <p className="serif text-[24px] leading-[1.25] tracking-[-0.01em]">
+              A <em className="italic text-[var(--accent)]">version-controlled memory</em> shared
+              across agents, teams, and organizations — with review, attribution, and rollback.
+            </p>
+          </aside>
+        </div>
       </div>
-
-      <TerminalBlock />
-      <HeroImage />
     </section>
   );
 }
 
-function TerminalBlock() {
+function Terminal() {
   return (
-    <div className="w-full max-w-2xl terminal-window rounded-2xl overflow-hidden mx-auto text-left relative z-20 mb-0">
-      <div className="flex items-center justify-between px-4 py-3 bg-[#080814] border-b border-white/[0.06]">
-        <div className="flex gap-2" aria-hidden>
-          <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-          <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
-          <div className="w-3 h-3 rounded-full bg-[#28c840]" />
+    <div className="bg-[var(--paper-2)] border border-[var(--rule-strong)] rounded-[14px] p-4.5 px-5 mono text-[13.5px] relative">
+      <div className="relative">
+        <div className="text-[10.5px] tracking-[0.18em] uppercase text-[var(--muted)] mb-2.5">INSTALL · ONE LINE</div>
+        <div className="flex items-center gap-2.5">
+          <span className="text-[var(--accent)] font-semibold">$</span>
+          <span>npx @aithub/cli init</span>
+          <span className="inline-block w-2 h-3.5 bg-[var(--accent)] -mb-0.5 ml-0.5 animate-pulse" />
         </div>
-        <div className="text-[11px] font-mono text-gray-500 font-medium tracking-wider">TERMINAL</div>
-        <div className="w-[52px]" />
+        <button className="absolute top-3.5 right-0 text-[10.5px] tracking-[0.12em] uppercase text-[var(--muted)] border border-[var(--rule-strong)] py-1 px-2 rounded-full hover:text-[var(--ink)] hover:border-[var(--ink)] transition-colors mono">
+          copy
+        </button>
       </div>
-      <div className="p-5 font-mono text-[13px] leading-7 text-gray-300">
-        <div className="text-gray-500 text-[11px] uppercase tracking-widest mb-3">Install with NPX</div>
-        <div className="flex items-center gap-2 font-medium mb-5">
-          <span className="text-blue-400">$</span>
-          <span className="text-white">npx</span>
-          <span className="text-blue-300">@aithub/cli</span>
-        </div>
-        <div className="text-gray-500 text-[11px] uppercase tracking-widest mb-3">Or Register with GitHub</div>
-        <div className="flex items-center gap-2 font-medium text-[12px]">
-          <span className="text-blue-400">$</span>
-          <span className="text-white">npx</span>
-          <span className="text-blue-300">@aithub/cli</span>
-          <span className="text-gray-500">--register --github</span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function HeroImage() {
-  return (
-    <div className="w-full max-w-5xl mx-auto relative z-0 mt-[-60px]">
-      <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-transparent to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050510] via-transparent to-transparent z-10 pointer-events-none opacity-60" />
-      <div className="absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-[#050510] to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-[#050510] to-transparent z-10 pointer-events-none" />
-      <Image
-        src="/images/hero_global_nodes.png"
-        width={1400}
-        height={700}
-        alt="Global AI skill sharing network"
-        className="w-full h-auto object-cover opacity-70 mix-blend-lighten"
-        priority
-        sizes="(max-width: 1024px) 100vw, 1024px"
-      />
+      <div className="h-px bg-[var(--rule)] my-4.5" />
+
+      <div className="relative">
+        <div className="text-[10.5px] tracking-[0.18em] uppercase text-[var(--muted)] mb-2.5">OR · REGISTER WITH GITHUB</div>
+        <div className="flex items-center gap-2.5">
+          <span className="text-[var(--accent)] font-semibold">$</span>
+          <span>npx @aithub/cli</span>
+          <span className="text-[var(--muted)]">--register --github</span>
+        </div>
+        <button className="absolute top-3.5 right-0 text-[10.5px] tracking-[0.12em] uppercase text-[var(--muted)] border border-[var(--rule-strong)] py-1 px-2 rounded-full hover:text-[var(--ink)] hover:border-[var(--ink)] transition-colors mono">
+          copy
+        </button>
+      </div>
     </div>
   );
 }
