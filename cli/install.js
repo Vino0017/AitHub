@@ -6,7 +6,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 
-const SKILLHUB_API = process.env.SKILLHUB_API || 'https://skillhub.koolkassanmsk.top';
+const SKILLHUB_API = process.env.SKILLHUB_API || 'https://aithub.space';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
