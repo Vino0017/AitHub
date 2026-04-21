@@ -7,14 +7,16 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
 const (
 	defaultAPIURL = "https://aithub.space"
-	version       = "3.1.0"
+	version       = "4.1.0"
 )
 
 var (
@@ -28,15 +30,31 @@ func main() {
 		Short:   "SkillHub CLI - AI skill registry client",
 		Version: version,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			// Load token from env if not provided via flag
+			// Load config file
+			homeDir, _ := os.UserHomeDir()
+			configFile := filepath.Join(homeDir, ".aithub", "config.json")
+			fileConfig := make(map[string]string)
+			if data, err := os.ReadFile(configFile); err == nil {
+				json.Unmarshal(data, &fileConfig)
+			}
+
+			// Token priority: --token flag > $SKILLHUB_TOKEN > config.json
 			if token == "" {
 				token = os.Getenv("SKILLHUB_TOKEN")
 			}
+			if token == "" {
+				token = fileConfig["token"]
+			}
+
+			// API URL priority: --api flag > $SKILLHUB_API > config.json > default
 			if apiURL == "" {
 				apiURL = os.Getenv("SKILLHUB_API")
-				if apiURL == "" {
-					apiURL = defaultAPIURL
-				}
+			}
+			if apiURL == "" {
+				apiURL = fileConfig["api"]
+			}
+			if apiURL == "" {
+				apiURL = defaultAPIURL
 			}
 		},
 	}
@@ -53,6 +71,7 @@ func main() {
 	rootCmd.AddCommand(detailsCmd())
 	rootCmd.AddCommand(configCmd())
 	rootCmd.AddCommand(diffCmd())
+	rootCmd.AddCommand(registerCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
@@ -123,10 +142,12 @@ func searchCmd() *cobra.Command {
 					InstallCount       int      `json:"install_count"`
 					OutcomeSuccessRate float64  `json:"outcome_success_rate"`
 					Tags               []string `json:"tags"`
+					RelevanceScore     float64  `json:"relevance_score"`
 				} `json:"skills"`
-				Total  int `json:"total"`
-				Limit  int `json:"limit"`
-				Offset int `json:"offset"`
+				Total      int    `json:"total"`
+				Limit      int    `json:"limit"`
+				Offset     int    `json:"offset"`
+				SearchMode string `json:"search_mode"`
 			}
 
 			if err := json.Unmarshal(body, &result); err != nil {
@@ -138,16 +159,42 @@ func searchCmd() *cobra.Command {
 				return nil
 			}
 
-			fmt.Printf("Found %d skill(s) (showing %d-%d of %d):\n\n",
+			fmt.Printf("Found %d skill(s) (showing %d-%d of %d):\n",
 				len(result.Skills),
 				result.Offset+1,
 				result.Offset+len(result.Skills),
 				result.Total)
+			if result.SearchMode != "" {
+				fmt.Printf("Search mode: %s\n", result.SearchMode)
+			}
+			fmt.Println()
+
+			// Bug #8: query for highlighting
+			queryLower := strings.ToLower(query)
+			queryWords := strings.Fields(queryLower)
+
 			for i, skill := range result.Skills {
 				fmt.Printf("%d. %s\n", i+1, skill.FullName)
-				fmt.Printf("   %s\n", skill.Description)
-				fmt.Printf("   ⭐ %.1f | 📦 %d installs | ✅ %.0f%% success\n",
+				// Bug #3: consistent truncation at 80 chars
+				desc := skill.Description
+				if len(desc) > 80 {
+					desc = desc[:77] + "..."
+				}
+				// Bug #8: highlight matching keywords
+				if len(queryWords) > 0 {
+					for _, word := range queryWords {
+						if word != "" {
+							desc = highlightWord(desc, word)
+						}
+					}
+				}
+				fmt.Printf("   %s\n", desc)
+				statsLine := fmt.Sprintf("   ⭐ %.1f | 📦 %d installs | ✅ %.0f%% success",
 					skill.AvgRating, skill.InstallCount, skill.OutcomeSuccessRate*100)
+				if skill.RelevanceScore > 0 {
+					statsLine += fmt.Sprintf(" | 🎯 %.0f%% match", skill.RelevanceScore*100)
+				}
+				fmt.Println(statsLine)
 				if len(skill.Tags) > 0 {
 					fmt.Printf("   Tags: %s\n", strings.Join(skill.Tags, ", "))
 				}
@@ -211,6 +258,15 @@ func installCmd() *cobra.Command {
 				return err
 			}
 
+			if resp.StatusCode == http.StatusNotFound {
+				// Bug #1: better error for missing content
+				fmt.Fprintf(os.Stderr, "Error: Skill content not available.\n\n")
+				fmt.Fprintf(os.Stderr, "Possible reasons:\n")
+				fmt.Fprintf(os.Stderr, "  - Skill has no approved revision yet (may be pending review)\n")
+				fmt.Fprintf(os.Stderr, "  - Skill namespace/name is incorrect\n\n")
+				fmt.Fprintf(os.Stderr, "Check status: aithub status %s/%s\n", parts[0], parts[1])
+				return fmt.Errorf("skill content not found")
+			}
 			if resp.StatusCode != http.StatusOK {
 				return fmt.Errorf("API error (%d): %s", resp.StatusCode, string(body))
 			}
@@ -301,7 +357,7 @@ func rateCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "rate <namespace/name> <score>",
-		Short: "Rate a skill (1-10)",
+		Short: "Rate a skill (1-5 stars)",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			parts := strings.Split(args[0], "/")
@@ -313,8 +369,8 @@ func rateCmd() *cobra.Command {
 			if _, err := fmt.Sscanf(args[1], "%d", &score); err != nil {
 				return fmt.Errorf("invalid score: %s", args[1])
 			}
-			if score < 1 || score > 10 {
-				return fmt.Errorf("score must be between 1 and 10")
+			if score < 1 || score > 5 {
+				return fmt.Errorf("score must be between 1 and 5")
 			}
 
 			payload := map[string]interface{}{
@@ -371,7 +427,8 @@ func rateCmd() *cobra.Command {
 				return fmt.Errorf("API error (%d): %s", resp.StatusCode, string(body))
 			}
 
-			fmt.Printf("✓ Rating submitted for %s (score: %d, outcome: %s)\n", args[0], score, outcome)
+			stars := strings.Repeat("⭐", score)
+			fmt.Printf("✓ Rating submitted for %s (%s, outcome: %s)\n", args[0], stars, outcome)
 			return nil
 		},
 	}
@@ -504,6 +561,7 @@ func statusCmd() *cobra.Command {
 
 			var result struct {
 				Status         string `json:"status"`
+				Version        string `json:"version"`
 				ReviewFeedback struct {
 					Issues []struct {
 						Type    string `json:"type"`
@@ -516,11 +574,33 @@ func statusCmd() *cobra.Command {
 				return err
 			}
 
-			fmt.Printf("Status: %s\n", result.Status)
+			// Bug #4: Better status messages
+			statusIcons := map[string]string{"approved": "✅", "pending": "⏳", "rejected": "❌"}
+			icon := statusIcons[result.Status]
+			if icon == "" {
+				icon = "❓"
+			}
+			fmt.Printf("%s Status: %s\n", icon, result.Status)
+			if result.Version != "" {
+				fmt.Printf("   Version: %s\n", result.Version)
+			}
+
+			switch result.Status {
+			case "approved":
+				fmt.Println("\n   Your skill is live and installable!")
+				fmt.Printf("   Install: aithub install %s\n", args[0])
+			case "pending":
+				fmt.Println("\n   Your skill is being reviewed by the AitHub team.")
+				fmt.Println("   Most reviews complete within a few minutes.")
+			case "rejected":
+				fmt.Println("\n   Your skill was not approved. See issues below.")
+				fmt.Println("   Fix the issues and resubmit with: aithub submit <file>")
+			}
+
 			if len(result.ReviewFeedback.Issues) > 0 {
-				fmt.Println("\nIssues found:")
+				fmt.Println("\n   Issues found:")
 				for i, issue := range result.ReviewFeedback.Issues {
-					fmt.Printf("%d. [%s] %s\n", i+1, issue.Type, issue.Message)
+					fmt.Printf("   %d. [%s] %s\n", i+1, issue.Type, issue.Message)
 				}
 			}
 
@@ -582,7 +662,12 @@ func forkCmd() *cobra.Command {
 				return nil
 			}
 
-			fmt.Printf("✓ Skill forked to: %s\n", result.FullName)
+			// Bug #7: Add next-step hints after fork
+			fmt.Printf("✓ Skill forked to: %s\n\n", result.FullName)
+			fmt.Println("Next steps:")
+			fmt.Printf("  📖 View:    aithub details %s\n", result.FullName)
+			fmt.Printf("  📦 Install: aithub install %s\n", result.FullName)
+			fmt.Printf("  ✏️  Edit:    aithub install %s -o skill.md && edit skill.md && aithub submit skill.md\n", result.FullName)
 			return nil
 		},
 	}
@@ -637,28 +722,58 @@ func detailsCmd() *cobra.Command {
 				return err
 			}
 
-			fmt.Printf("Skill: %s\n", result["full_name"])
-			fmt.Printf("Description: %s\n", result["description"])
+			// Bug #6: Show all key metadata
+			fmt.Printf("╔══════════════════════════════════════════╗\n")
+			fmt.Printf("║  %s\n", result["full_name"])
+			fmt.Printf("╚══════════════════════════════════════════╝\n\n")
+			fmt.Printf("  Description: %s\n", result["description"])
+			fmt.Printf("  Author:      %s\n", result["namespace"])
 
-			// Handle version field safely
-			if version, ok := result["version"].(string); ok && version != "" {
-				fmt.Printf("Version: %s\n", version)
-			} else {
-				fmt.Printf("Version: (not specified)\n")
+			// Version
+			if lv, ok := result["latest_version"].(string); ok && lv != "" {
+				fmt.Printf("  Version:     %s\n", lv)
+			}
+			fmt.Printf("  Framework:   %s\n", result["framework"])
+			fmt.Printf("  Visibility:  %s\n", result["visibility"])
+
+			// Tags
+			if tags, ok := result["tags"].([]interface{}); ok && len(tags) > 0 {
+				tagStrs := make([]string, len(tags))
+				for i, t := range tags {
+					tagStrs[i] = fmt.Sprintf("%v", t)
+				}
+				fmt.Printf("  Tags:        %s\n", strings.Join(tagStrs, ", "))
 			}
 
-			fmt.Printf("Framework: %s\n", result["framework"])
-			fmt.Printf("Rating: %.1f (%d ratings)\n", result["avg_rating"], int(result["rating_count"].(float64)))
-			fmt.Printf("Installs: %d\n", int(result["install_count"].(float64)))
-			fmt.Printf("Success Rate: %.0f%%\n", result["outcome_success_rate"].(float64)*100)
+			// Created at
+			if ca, ok := result["created_at"].(string); ok && ca != "" {
+				fmt.Printf("  Created:     %s\n", ca)
+			}
+			if ua, ok := result["updated_at"].(string); ok && ua != "" {
+				fmt.Printf("  Updated:     %s\n", ua)
+			}
 
+			fmt.Println()
+			fmt.Printf("  ⭐ Rating:   %.1f/5 (%d ratings)\n", result["avg_rating"], int(result["rating_count"].(float64)))
+			fmt.Printf("  📦 Installs: %d\n", int(result["install_count"].(float64)))
+			fmt.Printf("  ✅ Success:  %.0f%%\n", result["outcome_success_rate"].(float64)*100)
+			if fc, ok := result["fork_count"].(float64); ok && fc > 0 {
+				fmt.Printf("  🍴 Forks:    %d\n", int(fc))
+			}
+
+			// Forked from
+			if ff, ok := result["forked_from"]; ok && ff != nil {
+				fmt.Printf("  Forked from: %v\n", ff)
+			}
+
+			// Requirements
 			if reqs, ok := result["requirements"].(map[string]interface{}); ok {
-				fmt.Println("\nRequirements:")
+				fmt.Println("\n  Requirements:")
 				if software, ok := reqs["software"].([]interface{}); ok && len(software) > 0 {
-					fmt.Println("  Software:")
+					fmt.Println("    Software:")
 					for _, s := range software {
 						sw := s.(map[string]interface{})
-						fmt.Printf("    - %s", sw["name"])
+						fmt.Printf("      - %s", sw["name"])
 						if opt, ok := sw["optional"].(bool); ok && opt {
 							fmt.Print(" (optional)")
 						}
@@ -666,10 +781,10 @@ func detailsCmd() *cobra.Command {
 					}
 				}
 				if apis, ok := reqs["apis"].([]interface{}); ok && len(apis) > 0 {
-					fmt.Println("  APIs:")
+					fmt.Println("    APIs:")
 					for _, a := range apis {
 						api := a.(map[string]interface{})
-						fmt.Printf("    - %s (env: %s)", api["name"], api["env_var"])
+						fmt.Printf("      - %s (env: %s)", api["name"], api["env_var"])
 						if opt, ok := api["optional"].(bool); ok && opt {
 							fmt.Print(" (optional)")
 						}
@@ -958,4 +1073,172 @@ func fetchSkillContent(namespace, name, version string) (string, error) {
 	}
 
 	return result.Content, nil
+}
+
+func registerCmd() *cobra.Command {
+	var github bool
+
+	cmd := &cobra.Command{
+		Use:   "register",
+		Short: "Register an account (needed for rate/submit/fork)",
+		Long: `Register with AitHub to unlock: rating skills, submitting skills, and forking.
+
+Search, install, and details work without registration.
+
+Examples:
+  aithub register --github`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if !github {
+				fmt.Println("Please specify a registration method:")
+				fmt.Println("  aithub register --github    Register with GitHub")
+				fmt.Println("")
+				fmt.Println("Search/install/details work without registration.")
+				return nil
+			}
+
+			fmt.Println("→ Starting GitHub registration...")
+			fmt.Println("")
+
+			// Step 1: Start device flow
+			url := fmt.Sprintf("%s/v1/auth/github", apiURL)
+			req, err := http.NewRequest("POST", url, nil)
+			if err != nil {
+				return fmt.Errorf("failed to create request: %w", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return fmt.Errorf("failed to contact API: %w\n\nCheck your internet connection and that %s is reachable.", err, apiURL)
+			}
+			defer resp.Body.Close()
+
+			body, _ := io.ReadAll(resp.Body)
+
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("registration failed (HTTP %d): %s\n\nIf this persists, report to admin@aithub.space", resp.StatusCode, string(body))
+			}
+
+			var deviceFlow struct {
+				DeviceCode      string `json:"device_code"`
+				UserCode        string `json:"user_code"`
+				VerificationURI string `json:"verification_uri"`
+				ExpiresIn       int    `json:"expires_in"`
+				Instruction     string `json:"instruction"`
+			}
+
+			if err := json.Unmarshal(body, &deviceFlow); err != nil {
+				return fmt.Errorf("invalid response from API: %w", err)
+			}
+
+			fmt.Println("╔══════════════════════════════════════════╗")
+			fmt.Println("║        GitHub Device Authorization       ║")
+			fmt.Println("╠══════════════════════════════════════════╣")
+			fmt.Printf("║  1. Open: %-30s ║\n", deviceFlow.VerificationURI)
+			fmt.Printf("║  2. Enter code: %-24s ║\n", deviceFlow.UserCode)
+			fmt.Println("║  3. Authorize AitHub                     ║")
+			fmt.Println("╚══════════════════════════════════════════╝")
+			fmt.Println("")
+			fmt.Println("Waiting for authorization...")
+
+			// Step 2: Poll for completion
+			pollURL := fmt.Sprintf("%s/v1/auth/github/poll", apiURL)
+			pollPayload, _ := json.Marshal(map[string]string{
+				"device_code": deviceFlow.DeviceCode,
+			})
+
+			deadline := time.Now().Add(time.Duration(deviceFlow.ExpiresIn) * time.Second)
+			for time.Now().Before(deadline) {
+				time.Sleep(5 * time.Second)
+
+				pollReq, _ := http.NewRequest("POST", pollURL, bytes.NewBuffer(pollPayload))
+				pollReq.Header.Set("Content-Type", "application/json")
+
+				pollResp, err := http.DefaultClient.Do(pollReq)
+				if err != nil {
+					fmt.Print(".")
+					continue
+				}
+
+				pollBody, _ := io.ReadAll(pollResp.Body)
+				pollResp.Body.Close()
+
+				if pollResp.StatusCode != http.StatusOK {
+					fmt.Print(".")
+					continue
+				}
+
+				var pollResult struct {
+					Status    string `json:"status"`
+					Token     string `json:"token"`
+					Namespace string `json:"namespace"`
+					Error     string `json:"error"`
+				}
+
+				if err := json.Unmarshal(pollBody, &pollResult); err != nil {
+					fmt.Print(".")
+					continue
+				}
+
+				if pollResult.Status == "pending" {
+					fmt.Print(".")
+					continue
+				}
+
+				if pollResult.Status == "complete" && pollResult.Token != "" {
+					fmt.Println("")
+					fmt.Println("")
+
+					// Save to config
+					homeDir, _ := os.UserHomeDir()
+					configDir := filepath.Join(homeDir, ".aithub")
+					os.MkdirAll(configDir, 0755)
+					configFile := filepath.Join(configDir, "config.json")
+
+					config := make(map[string]string)
+					if data, err := os.ReadFile(configFile); err == nil {
+						json.Unmarshal(data, &config)
+					}
+					config["token"] = pollResult.Token
+					config["namespace"] = pollResult.Namespace
+					config["api"] = apiURL
+
+					data, _ := json.MarshalIndent(config, "", "  ")
+					os.WriteFile(configFile, data, 0644)
+
+					// Also set environment variable hint
+					fmt.Println("╔══════════════════════════════════════════╗")
+					fmt.Println("║        ✓ Registration Complete!          ║")
+					fmt.Println("╠══════════════════════════════════════════╣")
+					fmt.Printf("║  Namespace: %-28s ║\n", pollResult.Namespace)
+					fmt.Printf("║  Token: %-32s ║\n", pollResult.Token)
+					fmt.Printf("║  Config: %-31s ║\n", configFile)
+					fmt.Println("╚══════════════════════════════════════════╝")
+					fmt.Println("")
+					fmt.Println("You can now:")
+					fmt.Println("  aithub rate <namespace/name> <score>    Rate a skill")
+					fmt.Println("  aithub submit SKILL.md                  Submit a skill")
+					fmt.Println("  aithub fork <namespace/name>            Fork a skill")
+					return nil
+				}
+			}
+
+			fmt.Println("")
+			return fmt.Errorf("authorization timed out. Please try again: aithub register --github")
+		},
+	}
+
+	cmd.Flags().BoolVar(&github, "github", false, "Register with GitHub")
+
+	return cmd
+}
+
+// highlightWord wraps matching words with ANSI bold
+func highlightWord(text, word string) string {
+	lower := strings.ToLower(text)
+	idx := strings.Index(lower, word)
+	if idx == -1 {
+		return text
+	}
+	return text[:idx] + "\033[1;33m" + text[idx:idx+len(word)] + "\033[0m" + text[idx+len(word):]
 }

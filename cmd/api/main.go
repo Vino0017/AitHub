@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -20,6 +22,7 @@ import (
 	"github.com/skillhub/api/internal/middleware"
 	"github.com/skillhub/api/internal/review"
 	"github.com/skillhub/api/internal/usage"
+	"github.com/skillhub/api/internal/embedding"
 )
 
 func main() {
@@ -57,6 +60,10 @@ func main() {
 	aiReviewEnabled := os.Getenv("AI_REVIEW_ENABLED") == "true" && llmClient.IsConfigured()
 	reviewer := review.NewReviewer(pool, llmClient, aiReviewEnabled)
 
+	// Initialize embedding client for vector search
+	embedClient := embedding.NewClient()
+	vectorSearchEnabled := embedClient.IsConfigured()
+
 	// Initialize River job queue
 	workers := river.NewWorkers()
 	river.AddWorker(workers, review.NewReviewWorker(reviewer))
@@ -82,7 +89,7 @@ func main() {
 	// Handlers
 	tokens := handler.NewTokenHandler(pool)
 	auth := handler.NewAuthHandler(pool, emailSender)
-	search := handler.NewSkillSearchHandler(pool)
+	search := handler.NewSkillSearchHandler(pool, embedClient)
 	detail := handler.NewSkillDetailHandler(pool)
 	submit := handler.NewSkillSubmitHandler(pool, reviewer, riverClient)
 	ratings := handler.NewRatingHandler(pool)
@@ -195,6 +202,11 @@ func main() {
 	go runPeriodicRatingRefresh(pool)
 	go runPeriodicUsageStatsRefresh(pool)
 
+	// Backfill embeddings for skills that don't have them yet
+	if vectorSearchEnabled {
+		go backfillEmbeddings(pool, embedClient)
+	}
+
 	// ── Start server ──
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -202,6 +214,7 @@ func main() {
 	}
 	log.Printf("SkillHub API v2 listening on :%s", port)
 	log.Printf("  AI Review: %v", aiReviewEnabled)
+	log.Printf("  Vector Search: %v", vectorSearchEnabled)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
 	}
@@ -278,4 +291,93 @@ func runPeriodicUsageStatsRefresh(pool *pgxpool.Pool) {
 			log.Printf("periodic usage stats refresh error: %v", err)
 		}
 	}
+}
+
+// backfillEmbeddings generates embeddings for skills that don't have them yet.
+func backfillEmbeddings(pool *pgxpool.Pool, embedCl *embedding.Client) {
+	log.Println("[embedding] Starting backfill for skills without embeddings...")
+	ctx := context.Background()
+
+	rows, err := pool.Query(ctx,
+		`SELECT s.id, s.name, s.description, s.tags, s.framework
+		 FROM skills s WHERE s.embedding IS NULL AND s.status = 'active'`)
+	if err != nil {
+		log.Printf("[embedding] backfill query error: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	type skillRow struct {
+		id        interface{}
+		name      string
+		desc      string
+		tags      []string
+		framework string
+	}
+
+	var skills []skillRow
+	for rows.Next() {
+		var s skillRow
+		if err := rows.Scan(&s.id, &s.name, &s.desc, &s.tags, &s.framework); err != nil {
+			continue
+		}
+		skills = append(skills, s)
+	}
+
+	if len(skills) == 0 {
+		log.Println("[embedding] All skills already have embeddings")
+		return
+	}
+
+	log.Printf("[embedding] Generating embeddings for %d skills...", len(skills))
+
+	// Process in batches of 10
+	batchSize := 10
+	generated := 0
+	for i := 0; i < len(skills); i += batchSize {
+		end := i + batchSize
+		if end > len(skills) {
+			end = len(skills)
+		}
+		batch := skills[i:end]
+
+		texts := make([]string, len(batch))
+		for j, s := range batch {
+			texts[j] = embedding.SkillEmbeddingText(s.name, s.desc, s.tags, s.framework)
+		}
+
+		embedCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		vectors, err := embedCl.EmbedBatch(embedCtx, texts)
+		cancel()
+		if err != nil {
+			log.Printf("[embedding] batch error at %d: %v", i, err)
+			time.Sleep(2 * time.Second) // rate limit backoff
+			continue
+		}
+
+		for j, vec := range vectors {
+			vecStr := vectorToString(vec)
+			_, err := pool.Exec(ctx,
+				`UPDATE skills SET embedding = $1::vector WHERE id = $2`,
+				vecStr, batch[j].id)
+			if err != nil {
+				log.Printf("[embedding] update error for %s: %v", batch[j].name, err)
+			} else {
+				generated++
+			}
+		}
+
+		// Small delay between batches to respect rate limits
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	log.Printf("[embedding] Backfill complete: %d/%d skills embedded", generated, len(skills))
+}
+
+func vectorToString(v []float32) string {
+	parts := make([]string, len(v))
+	for i, f := range v {
+		parts[i] = fmt.Sprintf("%g", f)
+	}
+	return "[" + strings.Join(parts, ",") + "]"
 }

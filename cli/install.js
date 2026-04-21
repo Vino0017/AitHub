@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 
 const AITHUB_API = process.env.AITHUB_API || 'https://aithub.space';
-const VERSION = '3.2.0';
+const VERSION = '4.0.0';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -119,6 +119,18 @@ https.get(downloadUrl, (res) => {
     console.log(`✓ CLI installed to: ${installPath}`);
     console.log('');
 
+    // Save base config
+    const configDir = path.join(homeDir, '.aithub');
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    const configFile = path.join(configDir, 'config.json');
+    let config = {};
+    try { config = JSON.parse(fs.readFileSync(configFile, 'utf8')); } catch (e) {}
+    config.api = AITHUB_API;
+    fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
+    console.log(`✓ Config saved to: ${configFile}`);
+
     // Add to PATH
     const shellConfig = platform === 'win32' ? null :
                        fs.existsSync(path.join(homeDir, '.zshrc')) ? '.zshrc' : '.bashrc';
@@ -138,39 +150,51 @@ https.get(downloadUrl, (res) => {
       }
     }
 
+    // Test API connectivity
+    console.log('');
+    console.log('→ Testing API connectivity...');
+    try {
+      execSync(`${installPath} search test --limit 1 --api ${AITHUB_API}`, { stdio: 'pipe', timeout: 15000 });
+      console.log('✓ API connection OK');
+    } catch (err) {
+      console.log('⚠ API test failed — CLI installed but may not connect to server.');
+      console.log(`  Check: ${AITHUB_API}/health`);
+    }
+
     console.log('');
 
     // Handle registration
-    if (flags.register) {
-      console.log('→ Starting registration...');
+    if (flags.register && flags.github) {
+      console.log('→ Starting GitHub registration...');
+      console.log('  (This will open a GitHub device authorization flow)');
       console.log('');
-
-      let regCmd = `${installPath} config set api ${AITHUB_API}`;
 
       try {
-        execSync(regCmd, { stdio: 'inherit' });
+        execSync(`${installPath} register --github --api ${AITHUB_API}`, { stdio: 'inherit', timeout: 900000 });
       } catch (err) {
-        console.error('✗ Registration failed');
-        process.exit(1);
+        console.error('');
+        console.error('✗ Registration failed. You can retry later:');
+        console.error(`  ${installPath} register --github`);
+        console.error('');
+        console.error('Note: search/install/details work without registration.');
       }
-
-      console.log('');
-      console.log('✓ Registration complete!');
-      console.log('');
-      console.log('Next steps:');
-      console.log('  1. Restart your terminal (or run: source ~/' + shellConfig + ')');
-      console.log('  2. Search skills: aithub search <query>');
-      console.log('  3. Install a skill: aithub install <namespace/name> --deploy');
-      console.log('');
-      console.log('Documentation: https://aithub.space/docs');
+    } else if (flags.register) {
+      console.log('⚠ Please specify a registration method:');
+      console.log('  npx @aithub/cli --register --github');
     } else {
       console.log('✓ Installation complete!');
       console.log('');
-      console.log('Next steps:');
-      console.log('  1. Restart your terminal (or run: source ~/' + (shellConfig || '.bashrc') + ')');
-      console.log('  2. Register (optional): npx @aithub/cli --register --github');
-      console.log('  3. Search skills: aithub search <query>');
+      console.log('Usage (no account needed):');
+      console.log('  aithub search <query>              Search skills');
+      console.log('  aithub install <namespace/name>    Install a skill');
+      console.log('  aithub details <namespace/name>    View skill details');
       console.log('');
+      console.log('To unlock rate/submit/fork:');
+      console.log('  aithub register --github');
+      console.log('');
+      if (shellConfig) {
+        console.log(`→ Restart your terminal or run: source ~/${shellConfig}`);
+      }
       console.log('Documentation: https://aithub.space/docs');
     }
   });

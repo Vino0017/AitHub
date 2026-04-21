@@ -9,7 +9,7 @@ import { getGlobalStats, getSkills } from "@/lib/api";
 export const revalidate = 0;
 
 export default async function Home() {
-  const [skills, stats] = await Promise.all([getSkills(), getGlobalStats()]);
+  const [skillData, stats] = await Promise.all([getSkills(), getGlobalStats()]);
 
   return (
     <main className="relative min-h-screen bg-[var(--paper)]">
@@ -18,7 +18,7 @@ export default async function Home() {
         <Hero stats={stats} />
         <StatsBar stats={stats} />
         <HowItWorks />
-        <Registry skills={skills} />
+        <Registry skills={skillData.skills} totalSkills={skillData.total} />
         <CtaFooter />
       </div>
     </main>

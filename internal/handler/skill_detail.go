@@ -106,7 +106,17 @@ func (h *SkillDetailHandler) Content(w http.ResponseWriter, r *http.Request) {
 
 	// Log usage for statistics
 	if tokenID, ok := middleware.GetTokenID(r.Context()).(uuid.UUID); ok {
-		go h.usageTracker.LogUsage(context.Background(), skill["id"].(uuid.UUID), tokenID, "install")
+		if skillID, ok := skill["id"].(uuid.UUID); ok {
+			go h.usageTracker.LogUsage(context.Background(), skillID, tokenID, "install")
+		} else if rawID, ok := skill["id"].([16]byte); ok {
+			go h.usageTracker.LogUsage(context.Background(), uuid.UUID(rawID), tokenID, "install")
+		}
+	} else if rawTokenID, ok := middleware.GetTokenID(r.Context()).([16]byte); ok {
+		if skillID, ok := skill["id"].(uuid.UUID); ok {
+			go h.usageTracker.LogUsage(context.Background(), skillID, uuid.UUID(rawTokenID), "install")
+		} else if rawID, ok := skill["id"].([16]byte); ok {
+			go h.usageTracker.LogUsage(context.Background(), uuid.UUID(rawID), uuid.UUID(rawTokenID), "install")
+		}
 	}
 
 	// 清理内容以防止 prompt 注入
@@ -325,7 +335,13 @@ func (h *SkillDetailHandler) GetUsageStats(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	stats, err := h.usageTracker.GetUsageStats(r.Context(), skill["id"].(uuid.UUID))
+	var skillID uuid.UUID
+	if id, ok := skill["id"].(uuid.UUID); ok {
+		skillID = id
+	} else if rawID, ok := skill["id"].([16]byte); ok {
+		skillID = uuid.UUID(rawID)
+	}
+	stats, err := h.usageTracker.GetUsageStats(r.Context(), skillID)
 	if err != nil {
 		helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to get usage stats", "")
 		return

@@ -43,8 +43,8 @@ func (h *RatingHandler) Submit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Score < 1 || req.Score > 10 {
-		helpers.WriteError(w, http.StatusBadRequest, "invalid_score", "Score must be between 1 and 10", "")
+	if req.Score < 1 || req.Score > 5 {
+		helpers.WriteError(w, http.StatusBadRequest, "invalid_score", "Score must be between 1 and 5", "")
 		return
 	}
 	if req.Outcome == "" {

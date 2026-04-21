@@ -102,6 +102,8 @@ func (h *AuthHandler) GitHubDevicePoll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("[auth] poll: device_code=%s...", req.DeviceCode[:20])
+
 	formData := url.Values{
 		"client_id":   {clientID},
 		"device_code": {req.DeviceCode},
@@ -113,12 +115,14 @@ func (h *AuthHandler) GitHubDevicePoll(w http.ResponseWriter, r *http.Request) {
 	tokenReq.Header.Set("Accept", "application/json")
 	tokenResp, err := http.DefaultClient.Do(tokenReq)
 	if err != nil {
-		helpers.WriteError(w, http.StatusBadGateway, "github_error", "Failed to poll", "")
+		log.Printf("[auth] poll: failed to contact GitHub: %v", err)
+		helpers.WriteError(w, http.StatusBadGateway, "github_error", "Failed to poll GitHub: "+err.Error(), "")
 		return
 	}
 	defer tokenResp.Body.Close()
 
 	if tokenResp.StatusCode != http.StatusOK {
+		log.Printf("[auth] poll: GitHub returned status %d", tokenResp.StatusCode)
 		helpers.WriteError(w, http.StatusBadGateway, "github_error",
 			fmt.Sprintf("GitHub returned status %d", tokenResp.StatusCode), "")
 		return
@@ -129,29 +133,39 @@ func (h *AuthHandler) GitHubDevicePoll(w http.ResponseWriter, r *http.Request) {
 		Error       string `json:"error"`
 	}
 	respBody, _ := io.ReadAll(tokenResp.Body)
+	log.Printf("[auth] poll: GitHub token response: %s", string(respBody))
 	if err := json.Unmarshal(respBody, &tokenResult); err != nil {
+		log.Printf("[auth] poll: failed to parse GitHub response: %v", err)
 		helpers.WriteError(w, http.StatusBadGateway, "github_error", "Invalid response from GitHub", "")
 		return
 	}
 
 	if tokenResult.Error != "" {
+		log.Printf("[auth] poll: GitHub says: %s (pending)", tokenResult.Error)
 		helpers.WriteJSON(w, http.StatusOK, map[string]string{"status": "pending", "error": tokenResult.Error})
 		return
 	}
 
+	log.Printf("[auth] poll: got access_token, fetching GitHub user...")
+
 	// Get GitHub user
 	userReq, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
 	userReq.Header.Set("Authorization", "Bearer "+tokenResult.AccessToken)
+	userReq.Header.Set("User-Agent", "AitHub-API/2.0")
 	userResp, err := http.DefaultClient.Do(userReq)
 	if err != nil {
-		helpers.WriteError(w, http.StatusBadGateway, "github_error", "Failed to get user", "")
+		log.Printf("[auth] poll: failed to get GitHub user: %v", err)
+		helpers.WriteError(w, http.StatusBadGateway, "github_error", "Failed to get user: "+err.Error(), "")
 		return
 	}
 	defer userResp.Body.Close()
 
+	respBody, _ = io.ReadAll(userResp.Body)
+	log.Printf("[auth] poll: GitHub /user response (status %d): %s", userResp.StatusCode, string(respBody))
+
 	if userResp.StatusCode != http.StatusOK {
 		helpers.WriteError(w, http.StatusBadGateway, "github_error",
-			fmt.Sprintf("GitHub /user returned status %d", userResp.StatusCode), "")
+			fmt.Sprintf("GitHub /user returned status %d: %s", userResp.StatusCode, string(respBody)), "")
 		return
 	}
 
@@ -159,38 +173,51 @@ func (h *AuthHandler) GitHubDevicePoll(w http.ResponseWriter, r *http.Request) {
 		Login string `json:"login"`
 		ID    int    `json:"id"`
 	}
-	respBody, _ = io.ReadAll(userResp.Body)
 	if err := json.Unmarshal(respBody, &ghUser); err != nil {
+		log.Printf("[auth] poll: failed to parse user: %v", err)
 		helpers.WriteError(w, http.StatusBadGateway, "github_error", "Invalid user response from GitHub", "")
 		return
 	}
 	if ghUser.Login == "" || ghUser.ID == 0 {
+		log.Printf("[auth] poll: empty user data: login=%s id=%d", ghUser.Login, ghUser.ID)
 		helpers.WriteError(w, http.StatusBadGateway, "github_error", "GitHub returned empty user data", "")
 		return
 	}
 
+	log.Printf("[auth] poll: GitHub user: %s (ID: %d)", ghUser.Login, ghUser.ID)
+
+	nsName := strings.ToLower(ghUser.Login)
 	ghIDStr := fmt.Sprintf("%d", ghUser.ID)
 	var nsID uuid.UUID
 	err = h.pool.QueryRow(r.Context(), `SELECT id FROM namespaces WHERE github_id = $1`, ghIDStr).Scan(&nsID)
 	if err != nil {
+		log.Printf("[auth] poll: namespace not found for github_id=%s, creating as '%s'...", ghIDStr, nsName)
 		err = h.pool.QueryRow(r.Context(),
 			`INSERT INTO namespaces (name, type, github_id) VALUES ($1, 'personal', $2) RETURNING id`,
-			ghUser.Login, ghIDStr).Scan(&nsID)
+			nsName, ghIDStr).Scan(&nsID)
 		if err != nil {
-			helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to create namespace", "")
+			log.Printf("[auth] poll: failed to create namespace: %v", err)
+			helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to create namespace: "+err.Error(), "")
 			return
 		}
 	}
+	log.Printf("[auth] poll: namespace_id=%s", nsID)
 
 	raw, _ := crypto.GenerateToken()
 	hash := crypto.HashToken(raw)
 	var tokenID uuid.UUID
-	h.pool.QueryRow(r.Context(),
+	err = h.pool.QueryRow(r.Context(),
 		`INSERT INTO tokens (namespace_id, token_hash, label) VALUES ($1, $2, 'github-oauth') RETURNING id`,
 		nsID, hash).Scan(&tokenID)
+	if err != nil {
+		log.Printf("[auth] poll: failed to create token: %v", err)
+		helpers.WriteError(w, http.StatusInternalServerError, "internal", "Failed to create token: "+err.Error(), "")
+		return
+	}
 
+	log.Printf("[auth] poll: SUCCESS! user=%s namespace=%s token_id=%s", nsName, nsID, tokenID)
 	helpers.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"status": "complete", "token": raw, "namespace": ghUser.Login, "token_id": tokenID,
+		"status": "complete", "token": raw, "namespace": nsName, "token_id": tokenID,
 	})
 }
 

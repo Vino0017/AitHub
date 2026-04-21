@@ -18,17 +18,23 @@ const EMPTY_STATS: GlobalStats = {
   total_contributors: 0,
 };
 
-export async function getSkills(): Promise<Skill[]> {
+export async function getSkills(query?: string, limit = 50): Promise<{skills: Skill[], total: number}> {
   try {
-    const res = await fetch(`${API_URL}/v1/skills`, {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    params.set('limit', String(limit));
+    const res = await fetch(`${API_URL}/v1/skills?${params}`, {
       cache: 'no-store',
       headers: authHeaders,
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { skills: [], total: 0 };
     const data = await res.json();
-    return (data.skills as Skill[]) || [];
+    return {
+      skills: (data.skills as Skill[]) || [],
+      total: data.total || 0,
+    };
   } catch {
-    return [];
+    return { skills: [], total: 0 };
   }
 }
 

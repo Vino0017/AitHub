@@ -12,7 +12,7 @@ GitHub OAuth returns "github_not_configured" because `GITHUB_CLIENT_ID` is not s
    - Click "New OAuth App"
    - Fill in:
      - Application name: `SkillHub`
-     - Homepage URL: `https://skillhub.koolkassanmsk.top`
+     - Homepage URL: `https://aithub.space`
      - Authorization callback URL: (leave empty - device flow doesn't use it)
    - Click "Register application"
    - Copy the **Client ID** and generate a **Client Secret**
@@ -32,7 +32,7 @@ GitHub OAuth returns "github_not_configured" because `GITHUB_CLIENT_ID` is not s
 
 4. **Test Registration**
    ```bash
-   curl -X POST https://skillhub.koolkassanmsk.top/v1/auth/github
+   curl -X POST https://aithub.space/v1/auth/github
    # Should return device_code and user_code
    ```
 

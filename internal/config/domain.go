@@ -6,7 +6,7 @@ import "os"
 func GetDomain() string {
 	domain := os.Getenv("DOMAIN")
 	if domain == "" {
-		domain = "https://your-domain.com"
+		domain = "https://aithub.space"
 	}
 	return domain
 }
