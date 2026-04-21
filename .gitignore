@@ -56,5 +56,25 @@ handler.test
 
 # Build artifacts
 dist/
+downloads/
 *.test
 .admin_token*.txt
+aithub
+
+# macOS resource fork files
+._*
+
+# Database backups
+*.bak
+*.bak.*
+*.sql.gz
+
+# Test/coverage
+coverage.out
+*.cover
+
+# Sensitive docs
+SSL_CERTIFICATE_INFO.md
+GITHUB_OAUTH_SETUP.md
+TEST_SERVER_DEPLOYMENT.md
+PRELOADED_SKILLS_STATUS.md

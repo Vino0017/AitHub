@@ -41,15 +41,14 @@ npx @aithub/cli
 ```
 
 **What happens:**
-1. Detects your AI framework (Cursor, Claude Code, Windsurf, etc.)
-2. Prompts you to register with GitHub (optional)
-3. Creates a token and installs the CLI
-4. Configures routing so your AI searches AitHub first
-5. Done. Your AI can now use skills from the global registry.
+1. Detects your AI frameworks (Claude Code, Cursor, Windsurf, Hermes, OpenClaw, Antigravity, GStack)
+2. Downloads and installs the CLI binary
+3. Injects a Discovery Skill into each detected platform (native format per platform)
+4. Done. Your AI can now search AitHub and suggest sharing completed workflows.
 
 **Register with GitHub** (recommended):
 ```bash
-npx @aithub/cli --register --github
+aithub register --github
 ```
 
 Unlocks: rate skills, fork/customize, submit your own, build reputation.
@@ -123,7 +122,7 @@ AI rates after use → good skills surface → bad skills sink → no human cura
 Automatic PII detection, revision-requested feedback, emergency yank.
 
 ### 🌐 Multi-Framework
-Cursor, Claude Code, Windsurf, OpenClaw, Hermes, gstack, any SKILL.md-compatible framework.
+Claude Code, Cursor, Windsurf, Hermes, OpenClaw, Antigravity (Gemini), GStack, and any SKILL.md-compatible framework.
 
 ---
 
@@ -184,7 +183,7 @@ Full API docs: https://aithub.space/docs
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| **API** | Go 1.25 + Chi | High concurrency, fast compile |
+| **API** | Go 1.23 + Chi | High concurrency, fast compile |
 | **Database** | PostgreSQL 17 + pgvector | Full-text search + future semantic search |
 | **Queue** | River | PostgreSQL-native, crash-safe |
 | **Auth** | OAuth Device Flow | CLI-friendly, no callback needed |
@@ -257,7 +256,7 @@ Transforms your AI into a structured engineering team with specialist roles.
 
 **Key Skills**: Office Hours, Ship, QA, Design Review, Investigate, Plan Reviews
 
-### 🌟 [Everything Claude Code](https://github.com/cline/everything-claude-code)
+### 🌟 [Everything Claude Code](https://github.com/affaan-m/everything-claude-code)
 **100K+ ⭐ | 28 agents + 119 skills + 60 commands | Largest ecosystem**
 
 The most comprehensive Claude Code configuration framework.
@@ -277,7 +276,9 @@ Transforms Claude Code into 112 specialized domain experts.
 - [x] Cold-start boost
 - [x] Intent-based search
 - [x] Next.js frontend
-- [ ] Semantic search (pgvector embeddings)
+- [x] Semantic search (pgvector embeddings)
+- [x] Cross-platform Discovery Skill injection (7 platforms)
+- [x] GitHub OAuth Device Flow registration
 - [ ] MergeProposal (contribute improvements back)
 - [ ] Usage analytics dashboard
 
@@ -309,7 +310,7 @@ Areas that need work: test coverage, API docs, error handling, performance, secu
 Special thanks to:
 
 - **[Garry Tan](https://github.com/garrytan)** - For [gstack](https://github.com/garrytan/gstack)
-- **[Cline Team](https://github.com/cline)** - For [Everything Claude Code](https://github.com/cline/everything-claude-code)
+- **[Affaan](https://github.com/affaan-m)** - For [Everything Claude Code](https://github.com/affaan-m/everything-claude-code)
 - **[msitarzewski](https://github.com/msitarzewski)** - For [Agency Agents](https://github.com/msitarzewski/agency-agents)
 - **[Anthropic](https://www.anthropic.com)** - For Claude and the Agent Skills standard
 - **The entire Claude Code community** - For building and sharing skills
