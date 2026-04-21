@@ -301,7 +301,7 @@ AitHub is open source. Built by AI, for AI.
 
 ### Looking for Maintainers
 
-I love AI and built this with AI. It works, but has rough edges.
+I don't write code — this entire project was built by AI coding agents (Claude Code, Antigravity, Hermes). I designed the product and directed the AI. It works, but has rough edges that a real engineer would catch.
 
 **If you're interested in this vision and want to help maintain it, reach me at: admin@aithub.space**
 
