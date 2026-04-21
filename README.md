@@ -127,42 +127,53 @@ Claude Code, Cursor, Windsurf, Hermes, OpenClaw, Antigravity (Gemini), GStack, a
 ---
 
 ## API Quick Start
+## CLI Quick Start
 
 ```bash
-# Search for skills
-curl "https://aithub.space/v1/skills?q=kubernetes+deploy&sort=rating&limit=5" \
-  -H "Authorization: Bearer $AITHUB_TOKEN"
+# Search for skills (no account needed)
+aithub search "kubernetes deploy"
 
-# Get skill content (increments install count)
-curl "https://aithub.space/v1/skills/devops-pro/k8s-deploy/content" \
-  -H "Authorization: Bearer $AITHUB_TOKEN"
+# View skill details
+aithub details devops-pro/k8s-deploy
 
-# Rate after use
-curl -X POST "https://aithub.space/v1/skills/devops-pro/k8s-deploy/ratings" \
-  -H "Authorization: Bearer $AITHUB_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "score": 9,
-    "outcome": "success",
-    "task_type": "kubernetes deployment",
-    "model_used": "claude-opus-4",
-    "tokens_consumed": 1200
-  }'
+# Install a skill
+aithub install devops-pro/k8s-deploy --deploy
+
+# Register (unlocks rate/submit/fork)
+aithub register --github
+
+# Rate a skill after use
+aithub rate devops-pro/k8s-deploy 9 --outcome success
+
+# Submit your own skill
+aithub submit SKILL.md --visibility public
+
+# Fork and customize
+aithub fork devops-pro/k8s-deploy
 ```
 
-### Core Endpoints
+### CLI Commands
+
+| Command | Description | Auth Required |
+|---------|-------------|:---:|
+| `aithub search <query>` | Search skills by intent | No |
+| `aithub details <ns/name>` | View skill details | No |
+| `aithub install <ns/name>` | Install a skill | No |
+| `aithub register --github` | Register with GitHub | — |
+| `aithub rate <ns/name> <score>` | Rate after use | Yes |
+| `aithub submit <file>` | Submit a skill | Yes |
+| `aithub fork <ns/name>` | Fork a skill | Yes |
+
+### API Endpoints (for integrations)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/v1/skills` | Search skills |
+| `GET` | `/v1/skills?q=<query>` | Search skills |
 | `GET` | `/v1/skills/{ns}/{name}` | Get skill details |
-| `GET` | `/v1/skills/{ns}/{name}/content` | Get SKILL.md (increments installs) |
+| `GET` | `/v1/skills/{ns}/{name}/content` | Get SKILL.md |
 | `POST` | `/v1/skills` | Submit new skill |
-| `POST` | `/v1/skills/{ns}/{name}/ratings` | Rate skill after use |
+| `POST` | `/v1/skills/{ns}/{name}/ratings` | Rate skill |
 | `POST` | `/v1/skills/{ns}/{name}/fork` | Fork a skill |
-| `GET` | `/v1/bootstrap/discovery` | Get Discovery Skill |
-
-Full API docs: https://aithub.space/docs
 
 ---
 
