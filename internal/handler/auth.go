@@ -104,10 +104,15 @@ func (h *AuthHandler) GitHubDevicePoll(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[auth] poll: device_code=%s...", req.DeviceCode[:20])
 
+	clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
+
 	formData := url.Values{
 		"client_id":   {clientID},
 		"device_code": {req.DeviceCode},
 		"grant_type":  {"urn:ietf:params:oauth:grant-type:device_code"},
+	}
+	if clientSecret != "" {
+		formData.Set("client_secret", clientSecret)
 	}
 	tokenReq, _ := http.NewRequest("POST", "https://github.com/login/oauth/access_token",
 		strings.NewReader(formData.Encode()))

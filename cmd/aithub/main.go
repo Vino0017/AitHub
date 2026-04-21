@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -95,7 +96,7 @@ func searchCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			query := strings.Join(args, " ")
 
-			url := fmt.Sprintf("%s/v1/skills?q=%s&limit=%d&offset=%d", apiURL, query, limit, offset)
+			url := fmt.Sprintf("%s/v1/skills?q=%s&limit=%d&offset=%d", apiURL, url.QueryEscape(query), limit, offset)
 			if framework != "" {
 				url += "&framework=" + framework
 			}
@@ -1097,10 +1098,12 @@ Examples:
 			}
 
 			fmt.Println("→ Starting GitHub registration...")
+			fmt.Printf("  API: %s\n", apiURL)
 			fmt.Println("")
 
 			// Step 1: Start device flow
 			url := fmt.Sprintf("%s/v1/auth/github", apiURL)
+			fmt.Printf("  → POST %s\n", url)
 			req, err := http.NewRequest("POST", url, nil)
 			if err != nil {
 				return fmt.Errorf("failed to create request: %w", err)
@@ -1116,7 +1119,7 @@ Examples:
 			body, _ := io.ReadAll(resp.Body)
 
 			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("registration failed (HTTP %d): %s\n\nIf this persists, report to admin@aithub.space", resp.StatusCode, string(body))
+				return fmt.Errorf("registration failed (HTTP %d): %s\n  URL: %s\n\nIf this persists, report to admin@aithub.space", resp.StatusCode, string(body), url)
 			}
 
 			var deviceFlow struct {
@@ -1148,15 +1151,19 @@ Examples:
 			})
 
 			deadline := time.Now().Add(time.Duration(deviceFlow.ExpiresIn) * time.Second)
+			interval := 6 * time.Second // GitHub default is 5s, use 6 for safety
+			pollCount := 0
+
 			for time.Now().Before(deadline) {
-				time.Sleep(5 * time.Second)
+				time.Sleep(interval)
+				pollCount++
 
 				pollReq, _ := http.NewRequest("POST", pollURL, bytes.NewBuffer(pollPayload))
 				pollReq.Header.Set("Content-Type", "application/json")
 
 				pollResp, err := http.DefaultClient.Do(pollReq)
 				if err != nil {
-					fmt.Print(".")
+					fmt.Printf("\r⏳ Waiting for authorization... (%ds) [network error, retrying]", pollCount*int(interval.Seconds()))
 					continue
 				}
 
@@ -1164,7 +1171,7 @@ Examples:
 				pollResp.Body.Close()
 
 				if pollResp.StatusCode != http.StatusOK {
-					fmt.Print(".")
+					fmt.Printf("\r⏳ Waiting for authorization... (%ds) [server error %d]", pollCount*int(interval.Seconds()), pollResp.StatusCode)
 					continue
 				}
 
@@ -1176,12 +1183,19 @@ Examples:
 				}
 
 				if err := json.Unmarshal(pollBody, &pollResult); err != nil {
-					fmt.Print(".")
+					fmt.Printf("\r⏳ Waiting for authorization... (%ds)", pollCount*int(interval.Seconds()))
+					continue
+				}
+
+				// Handle slow_down from GitHub (via server)
+				if pollResult.Error == "slow_down" {
+					interval = interval + 5*time.Second // GitHub requires +5s on slow_down
+					fmt.Printf("\r⏳ Waiting for authorization... (%ds) [rate limited, slowing]", pollCount*int(interval.Seconds()))
 					continue
 				}
 
 				if pollResult.Status == "pending" {
-					fmt.Print(".")
+					fmt.Printf("\r⏳ Waiting for authorization... (%ds)", pollCount*int(interval.Seconds()))
 					continue
 				}
 
