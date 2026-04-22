@@ -1105,6 +1105,58 @@ func fetchSkillContent(namespace, name, version string) (string, error) {
 	return result.Content, nil
 }
 
+// persistToShellProfile writes SKILLHUB_TOKEN and SKILLHUB_NAMESPACE to ~/.zshrc or ~/.bashrc
+func persistToShellProfile(homeDir, token, namespace string) {
+	// Determine shell profile
+	shellFile := ""
+	if _, err := os.Stat(filepath.Join(homeDir, ".zshrc")); err == nil {
+		shellFile = ".zshrc"
+	} else if _, err := os.Stat(filepath.Join(homeDir, ".bashrc")); err == nil {
+		shellFile = ".bashrc"
+	}
+	if shellFile == "" {
+		return
+	}
+
+	shellPath := filepath.Join(homeDir, shellFile)
+	content, err := os.ReadFile(shellPath)
+	if err != nil {
+		return
+	}
+
+	// Remove old AitHub credentials block
+	lines := strings.Split(string(content), "\n")
+	var cleaned []string
+	skip := false
+	for _, line := range lines {
+		if line == "# AitHub Credentials" {
+			skip = true
+			continue
+		}
+		if skip && strings.HasPrefix(line, "export SKILLHUB_") {
+			continue
+		}
+		skip = false
+		cleaned = append(cleaned, line)
+	}
+
+	// Append new credentials
+	envBlock := "\n# AitHub Credentials\n"
+	if token != "" {
+		envBlock += fmt.Sprintf("export SKILLHUB_TOKEN=\"%s\"\n", token)
+	}
+	if namespace != "" {
+		envBlock += fmt.Sprintf("export SKILLHUB_NAMESPACE=\"%s\"\n", namespace)
+	}
+
+	newContent := strings.Join(cleaned, "\n") + envBlock
+	if err := os.WriteFile(shellPath, []byte(newContent), 0644); err != nil {
+		return
+	}
+	fmt.Printf("  ✓ Credentials persisted to ~/%s\n", shellFile)
+	fmt.Printf("  → Run: source ~/%s\n", shellFile)
+}
+
 func registerCmd() *cobra.Command {
 	var github bool
 
@@ -1249,7 +1301,10 @@ Examples:
 					data, _ := json.MarshalIndent(config, "", "  ")
 					os.WriteFile(configFile, data, 0644)
 
-					// Also set environment variable hint
+					// Persist token to shell profile
+					persistToShellProfile(homeDir, pollResult.Token, pollResult.Namespace)
+
+					// Registration complete
 					fmt.Println("╔══════════════════════════════════════════╗")
 					fmt.Println("║        ✓ Registration Complete!          ║")
 					fmt.Println("╠══════════════════════════════════════════╣")
