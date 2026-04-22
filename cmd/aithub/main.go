@@ -292,30 +292,59 @@ func installCmd() *cobra.Command {
 				deployed := false
 				homeDir, _ := os.UserHomeDir()
 
-				// Framework directory mapping
-				frameworkDirs := map[string]string{
-					"gstack":      homeDir + "/.gstack/skills",
-					"openclaw":    homeDir + "/.openclaw/skills",
-					"hermes":      homeDir + "/.hermes/skills",
+				// SKILL.md-based platforms: skills/<skill-name>/SKILL.md
+				skillDirPlatforms := map[string]string{
 					"claude-code": homeDir + "/.claude/skills",
-					"cursor":      homeDir + "/.cursor/skills",
-					"windsurf":    homeDir + "/.windsurf/skills",
+					"gstack":      homeDir + "/.claude/skills/gstack",
+					"hermes":      homeDir + "/.hermes/skills",
+					"openclaw":    homeDir + "/.openclaw/skills",
 				}
 
-				// Try to detect installed frameworks
-				for fw, dir := range frameworkDirs {
-					parentDir := strings.TrimSuffix(dir, "/skills")
+				// Rules-based platforms (different file format)
+				rulesPlatforms := map[string]string{
+					"cursor":   homeDir + "/.cursor/rules",
+					"windsurf": homeDir + "/.windsurf/rules",
+				}
+
+				skillName := parts[1] // e.g. "k8s-deploy" from "devops-pro/k8s-deploy"
+
+				// Deploy to SKILL.md platforms
+				for fw, baseDir := range skillDirPlatforms {
+					parentDir := filepath.Dir(baseDir)
+					if fw == "gstack" {
+						parentDir = homeDir + "/.gstack" // detect by .gstack dir
+					}
 					if _, err := os.Stat(parentDir); err == nil {
-						// Framework detected, deploy here
-						skillDir := fmt.Sprintf("%s/%s", dir, parts[0])
+						skillDir := filepath.Join(baseDir, skillName)
 						if err := os.MkdirAll(skillDir, 0755); err != nil {
 							continue
 						}
-						skillFile := fmt.Sprintf("%s/SKILL.md", skillDir)
+						skillFile := filepath.Join(skillDir, "SKILL.md")
 						if err := os.WriteFile(skillFile, []byte(result.Content), 0644); err != nil {
 							continue
 						}
 						fmt.Printf("✓ Deployed to %s: %s (version %s)\n", fw, skillFile, result.Version)
+						deployed = true
+					}
+				}
+
+				// Deploy to rules-based platforms
+				for fw, rulesDir := range rulesPlatforms {
+					parentDir := filepath.Dir(rulesDir)
+					if _, err := os.Stat(parentDir); err == nil {
+						if err := os.MkdirAll(rulesDir, 0755); err != nil {
+							continue
+						}
+						var ruleFile string
+						if fw == "cursor" {
+							ruleFile = filepath.Join(rulesDir, skillName+".mdc")
+						} else {
+							ruleFile = filepath.Join(rulesDir, skillName+".md")
+						}
+						if err := os.WriteFile(ruleFile, []byte(result.Content), 0644); err != nil {
+							continue
+						}
+						fmt.Printf("✓ Deployed to %s: %s (version %s)\n", fw, ruleFile, result.Version)
 						deployed = true
 					}
 				}
