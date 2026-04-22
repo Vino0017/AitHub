@@ -22,7 +22,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/skillhub.git"
+    "url": "git+https://github.com/Vino0017/AitHub.git"
   },
   "engines": {
     "node": ">=14.0.0"
