@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 
 const AITHUB_API = process.env.AITHUB_API || 'https://aithub.space';
-const VERSION = '4.1.0';
+const VERSION = '4.1.1';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
