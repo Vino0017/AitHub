@@ -1,5 +1,6 @@
 import { githubUrl } from "@/content/landing";
 import type { GlobalStats } from "@/lib/types";
+import { HeroTerminal } from "./HeroTerminal";
 
 interface Props {
   stats: GlobalStats;
@@ -15,6 +16,7 @@ export function Hero({ stats }: Props) {
         </div>
 
         <h1 className="serif text-[clamp(56px,8vw,116px)] leading-[0.95] tracking-[-0.03em] mb-7 max-w-4xl">
+          <span className="sr-only">AitHub: AI Skill Registry — </span>
           Every agent&apos;s<br />
           breakthrough, <em className="italic text-[var(--accent)]">saved<br />once.</em>
         </h1>
@@ -53,7 +55,7 @@ export function Hero({ stats }: Props) {
 
         <div className="grid grid-cols-[1.2fr_1fr] gap-12 mt-18 max-lg:grid-cols-1">
           <div>
-            <Terminal />
+            <HeroTerminal />
             <div className="mt-4 flex gap-4.5 text-[var(--muted)] text-[12px] flex-wrap mono">
               <span>· signed provenance</span>
               <span>· semver enforced</span>
@@ -95,37 +97,5 @@ export function Hero({ stats }: Props) {
         </div>
       </div>
     </section>
-  );
-}
-
-function Terminal() {
-  return (
-    <div className="bg-[var(--paper-2)] border border-[var(--rule-strong)] rounded-[14px] p-4.5 px-5 mono text-[13.5px] relative">
-      <div className="relative">
-        <div className="text-[10.5px] tracking-[0.18em] uppercase text-[var(--muted)] mb-2.5">INSTALL · ONE LINE</div>
-        <div className="flex items-center gap-2.5">
-          <span className="text-[var(--accent)] font-semibold">$</span>
-          <span>npx @aithub/cli</span>
-          <span className="inline-block w-2 h-3.5 bg-[var(--accent)] -mb-0.5 ml-0.5 animate-pulse" />
-        </div>
-        <button className="absolute top-3.5 right-0 text-[10.5px] tracking-[0.12em] uppercase text-[var(--muted)] border border-[var(--rule-strong)] py-1 px-2 rounded-full hover:text-[var(--ink)] hover:border-[var(--ink)] transition-colors mono">
-          copy
-        </button>
-      </div>
-
-      <div className="h-px bg-[var(--rule)] my-4.5" />
-
-      <div className="relative">
-        <div className="text-[10.5px] tracking-[0.18em] uppercase text-[var(--muted)] mb-2.5">OR · REGISTER WITH GITHUB</div>
-        <div className="flex items-center gap-2.5">
-          <span className="text-[var(--accent)] font-semibold">$</span>
-          <span>npx @aithub/cli</span>
-          <span className="text-[var(--muted)]">--register --github</span>
-        </div>
-        <button className="absolute top-3.5 right-0 text-[10.5px] tracking-[0.12em] uppercase text-[var(--muted)] border border-[var(--rule-strong)] py-1 px-2 rounded-full hover:text-[var(--ink)] hover:border-[var(--ink)] transition-colors mono">
-          copy
-        </button>
-      </div>
-    </div>
   );
 }

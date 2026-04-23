@@ -37,7 +37,7 @@ func (h *DownloadHandler) ServeDownload(w http.ResponseWriter, r *http.Request) 
 	// Serve from dist/ directory
 	distDir := os.Getenv("CLI_DIST_DIR")
 	if distDir == "" {
-		distDir = "./dist"
+		distDir = "./downloads"
 	}
 
 	filePath := filepath.Join(distDir, binary)

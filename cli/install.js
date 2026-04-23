@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 
 const AITHUB_API = process.env.AITHUB_API || 'https://aithub.space';
-const VERSION = '4.1.1';
+const VERSION = '4.3.1';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -324,6 +324,13 @@ https.get(downloadUrl, (res) => {
     file.close();
     if (plat !== 'win32') fs.chmodSync(installPath, 0o755);
 
+    // macOS: remove quarantine xattr to prevent Gatekeeper from killing the binary
+    if (plat === 'darwin') {
+      try {
+        execSync(`xattr -d com.apple.quarantine "${installPath}" 2>/dev/null`, { stdio: 'pipe' });
+      } catch (e) { /* xattr may not exist or already cleared */ }
+    }
+
     console.log(`✓ CLI installed to: ${installPath}`);
     console.log('');
 
@@ -365,19 +372,13 @@ https.get(downloadUrl, (res) => {
     }
     console.log('');
 
-    // --- Auto-detect & inject Discovery Skill ---
+    // --- Auto-detect & inject Discovery Skill via CLI ---
     if (!flags.skipInject) {
-      console.log('→ Detecting AI platforms...');
-      const platforms = detectPlatforms();
-      const names = Object.keys(platforms);
-
-      if (names.length > 0) {
-        console.log(`  Found: ${names.join(', ')}`);
-        console.log('→ Injecting Discovery Skill...');
-        const n = injectDiscoverySkill(platforms);
-        if (n > 0) console.log(`✓ Discovery Skill injected into ${n} platform(s)`);
-      } else {
-        console.log('  No AI platforms found. Install Claude Code, Cursor, etc. first.');
+      console.log('→ Deploying Discovery Skill to AI platforms...');
+      try {
+        execSync(`${installPath} deploy --force --api ${AITHUB_API}`, { stdio: 'inherit', timeout: 30000 });
+      } catch (e) {
+        console.log('⚠ Discovery skill deployment failed. Run manually: aithub deploy');
       }
       console.log('');
     }

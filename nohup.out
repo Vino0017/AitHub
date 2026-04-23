@@ -1,0 +1,44 @@
+nohup: ignoring input
+2026/04/23 09:04:51 running migrations...
+2026/04/23 09:04:51 goose: no migrations to run. current version: 11
+2026/04/23 09:04:51 migrations completed
+2026/04/23 09:04:51 river queue migrations completed
+2026/04/23 09:04:51 SkillHub API v2 listening on :8080
+2026/04/23 09:04:51   AI Review: true
+2026/04/23 09:04:51   Vector Search: true
+2026/04/23 09:04:51 [embedding] Starting backfill for skills without embeddings...
+2026/04/23 09:04:52 [embedding] Generating embeddings for 3385 skills...
+2026/04/23 09:05:00 "HEAD http://aithub.space/health HTTP/1.1" from 127.0.0.1:38332 - 405 0B in 64.975µs
+2026/04/23 09:05:10 "GET http://aithub.space/downloads/aithub-linux-amd64 HTTP/1.1" from 127.0.0.1:60252 - 200 9654346B in 20.338414ms
+2026/04/23 09:07:00 "GET http://107.172.45.171:8080/login HTTP/1.1" from 192.109.200.197:47304 - 404 19B in 100.648µs
+2026/04/23 09:08:20 "GET http://aithub.space/downloads/aithub-darwin-arm64 HTTP/1.1" from 127.0.0.1:47006 - 200 9273954B in 927.220874ms
+2026/04/23 09:09:51 periodic rating refresh error: ERROR: aggregate function calls cannot contain window function calls (SQLSTATE 42803)
+2026/04/23 09:10:33 "GET http://aithub.space/v1/stats HTTP/1.1" from 127.0.0.1:58506 - 200 66B in 9.012464ms
+2026/04/23 09:10:33 "GET http://aithub.space/v1/skills?limit=50 HTTP/1.1" from 127.0.0.1:58506 - 200 29821B in 35.634798ms
+2026/04/23 09:10:33 "GET http://aithub.space/v1/skills?q= HTTP/1.1" from 127.0.0.1:58506 - 200 29821B in 28.901887ms
+2026/04/23 09:10:34 "GET http://aithub.space/v1/skills HTTP/1.1" from 127.0.0.1:58506 - 200 29821B in 16.637893ms
+2026/04/23 09:10:34 "GET http://aithub.space/v1/skills/ HTTP/1.1" from 127.0.0.1:58506 - 404 19B in 39.715µs
+2026/04/23 09:10:34 "GET http://aithub.space/v1/bootstrap/discovery HTTP/1.1" from 127.0.0.1:58506 - 200 5266B in 127.492µs
+2026/04/23 09:10:35 "GET http://aithub.space/v1/skills?q=example HTTP/1.1" from 127.0.0.1:58506 - 200 35273B in 336.905141ms
+2026/04/23 09:11:04 [embedding] Backfill complete: 3385/3385 skills embedded
+2026/04/23 09:12:30 "GET http://aithub.space/downloads/aithub-darwin-arm64 HTTP/1.1" from 127.0.0.1:54236 - 200 9273954B in 953.394723ms
+2026/04/23 09:12:51 "GET http://aithub.space/v1/bootstrap/discovery HTTP/1.1" from 127.0.0.1:39278 - 200 5266B in 261.278µs
+2026/04/23 09:13:03 "GET http://aithub.space/v1/bootstrap/discovery HTTP/1.1" from 127.0.0.1:39278 - 200 5266B in 241.991µs
+2026/04/23 09:14:51 periodic rating refresh error: ERROR: aggregate function calls cannot contain window function calls (SQLSTATE 42803)
+2026/04/23 09:14:51 periodic usage stats refresh error: ERROR: column reference "skill_id" is ambiguous (SQLSTATE 42702)
+2026/04/23 09:15:51 "GET http://aithub.space/v1/skills?limit=50 HTTP/1.1" from 127.0.0.1:40942 - 200 29821B in 21.001921ms
+2026/04/23 09:15:51 "GET http://aithub.space/v1/stats HTTP/1.1" from 127.0.0.1:40942 - 200 66B in 7.81103ms
+2026/04/23 09:19:51 periodic rating refresh error: ERROR: aggregate function calls cannot contain window function calls (SQLSTATE 42803)
+2026/04/23 09:20:23 "GET http://aithub.space/downloads/aithub-linux-amd64 HTTP/1.1" from 127.0.0.1:46712 - 200 9654346B in 578.285405ms
+2026/04/23 09:24:11 "GET http://aithub.space/v1/skills/everything-claude-code/python-testing HTTP/1.1" from 127.0.0.1:53946 - 200 753B in 4.155402ms
+2026/04/23 09:24:11 "GET http://aithub.space/v1/skills/gstack/benchmark HTTP/1.1" from 127.0.0.1:53946 - 200 794B in 1.299078ms
+2026/04/23 09:24:11 "GET http://aithub.space/v1/skills/clawhub/agent-group HTTP/1.1" from 127.0.0.1:53946 - 200 661B in 1.538677ms
+2026/04/23 09:24:12 "GET http://aithub.space/v1/skills/gstack/benchmark-models HTTP/1.1" from 127.0.0.1:53946 - 200 807B in 1.424849ms
+2026/04/23 09:24:12 "GET http://aithub.space/v1/skills/clawhub/gitlab-commit-report HTTP/1.1" from 127.0.0.1:53946 - 200 700B in 1.327035ms
+2026/04/23 09:24:12 "GET http://aithub.space/v1/skills/everything-claude-code/deep-research HTTP/1.1" from 127.0.0.1:53946 - 200 830B in 1.373961ms
+2026/04/23 09:24:12 "GET http://aithub.space/v1/skills/antigravity/web-scraper HTTP/1.1" from 127.0.0.1:53946 - 200 758B in 1.497099ms
+2026/04/23 09:24:12 "GET http://aithub.space/v1/skills/antigravity/andrej-karpathy HTTP/1.1" from 127.0.0.1:53946 - 200 767B in 1.264135ms
+2026/04/23 09:24:12 "GET http://aithub.space/v1/skills/everything-claude-code/hipaa-compliance HTTP/1.1" from 127.0.0.1:53946 - 200 837B in 1.792744ms
+2026/04/23 09:24:51 periodic rating refresh error: ERROR: aggregate function calls cannot contain window function calls (SQLSTATE 42803)
+2026/04/23 09:24:51 periodic usage stats refresh error: ERROR: column reference "skill_id" is ambiguous (SQLSTATE 42702)
+2026/04/23 09:25:20 "GET http://aithub.space/downloads/aithub-linux-amd64 HTTP/1.1" from 127.0.0.1:57748 - 200 9654346B in 106.259335ms

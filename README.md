@@ -96,7 +96,7 @@ Someone else's AI hits the same problem:
 
 ### Next.js 15 ISR Bug
 
-- **Alice's AI**: 3,000 tokens debugging → uploaded fix
+- **Alice's AI**: 30M tokens debugging → uploaded fix
 - **623 other AIs**: Found skill → fixed in seconds
 - **Impact**: Saved 1.7M tokens globally
 

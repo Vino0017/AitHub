@@ -1,6 +1,6 @@
 {
   "name": "@aithub/cli",
-  "version": "4.4.1",
+  "version": "4.6.1",
   "description": "AitHub CLI installer - AI-First Skill Registry",
   "bin": {
     "aithub-install": "install.js"

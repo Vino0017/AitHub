@@ -6,13 +6,13 @@ import { Registry } from "@/components/landing/Registry";
 import { CtaFooter } from "@/components/landing/CtaFooter";
 import { getGlobalStats, getSkills } from "@/lib/api";
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function Home() {
   const [skillData, stats] = await Promise.all([getSkills(), getGlobalStats()]);
 
   return (
-    <main className="relative min-h-screen bg-[var(--paper)]">
+    <main id="main" className="relative min-h-screen bg-[var(--paper)]">
       <div className="relative z-2">
         <Nav />
         <Hero stats={stats} />
